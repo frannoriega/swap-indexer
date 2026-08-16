@@ -1,0 +1,14 @@
+[package]
+name = "db"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# Shared crate: the `Swap` row type, a pool constructor, and the migrations that
+# define the schema. Both `ingestion` (writer) and `api` (reader) depend on this
+# so the row shape is defined in exactly one place.
+[dependencies]
+sqlx = { workspace = true }
+chrono = { workspace = true }
+rust_decimal = { workspace = true }
+serde = { workspace = true }

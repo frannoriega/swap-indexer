@@ -1,0 +1,53 @@
+[workspace]
+resolver = "2"
+members = ["db", "ingestion", "api", "benchmarks"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+# Centralize versions here so the three crates stay in lockstep. Carbon 1.0 is
+# built against Solana v3 and yellowstone-grpc-proto 10 — those must match the
+# versions Carbon itself uses or the gRPC filter/decoder types won't line up.
+[workspace.dependencies]
+# Carbon ingestion pipeline
+carbon-core = "1.0"
+carbon-log-metrics = "1.0"
+carbon-raydium-amm-v4-decoder = "1.0"
+carbon-yellowstone-grpc-datasource = "1.0"
+yellowstone-grpc-proto = { version = "10.0.0", features = ["convert"] }
+# Same major as Carbon uses, so the token-balance types unify.
+solana-transaction-status = "3"
+
+# API
+axum = "0.8"
+
+# Shared / persistence
+sqlx = { version = "0.9", default-features = false, features = [
+    "runtime-tokio",
+    "tls-rustls",
+    "postgres",
+    "macros",
+    "chrono",
+    "rust_decimal",
+    "migrate",
+] }
+chrono = { version = "0.4", features = ["serde"] }
+rust_decimal = { version = "1", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+
+# Runtime + plumbing
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+dotenv = "0.15"
+env_logger = "0.11"
+log = "0.4"
+# Carbon's gRPC transport needs a rustls crypto provider installed at startup.
+rustls = { version = "0.23.35", default-features = false, features = ["std", "aws_lc_rs"] }
+
+# Dev tooling: benchmarks + seeding.
+criterion = "0.5"
+clap = { version = "4", features = ["derive"] }
+hdrhistogram = "7"
+rand = "0.8"

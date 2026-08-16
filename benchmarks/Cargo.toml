@@ -1,0 +1,21 @@
+[package]
+name = "benchmarks"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# Dev tooling — not part of the shipped indexer. Two binaries:
+#   seed     — populate Postgres with synthetic swaps for manual API testing
+#   loadtest — measure write throughput + query-latency percentiles
+[dependencies]
+db = { path = "../db" }
+
+sqlx = { workspace = true }
+chrono = { workspace = true }
+rust_decimal = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+hdrhistogram = { workspace = true }
+rand = { workspace = true }
+dotenv = { workspace = true }

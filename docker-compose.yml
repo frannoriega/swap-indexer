@@ -1,0 +1,34 @@
+# Single Postgres service for local dev. No separate staging config — this is a POC.
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: swap
+      POSTGRES_PASSWORD: swap
+      POSTGRES_DB: swaps
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swap -d swaps"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Optional web UI to inspect what the indexer wrote. Opt-in, so the default
+  # `docker compose up` stays Postgres-only:
+  #   docker compose --profile tools up -d   # then open http://localhost:8080
+  #   (System: PostgreSQL, Server: postgres, User/Pass: swap, Database: swaps)
+  adminer:
+    image: adminer:5
+    profiles: ["tools"]
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:

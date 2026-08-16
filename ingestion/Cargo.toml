@@ -1,0 +1,35 @@
+[package]
+name = "ingestion"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The writer: Yellowstone gRPC -> Carbon decode -> upsert into Postgres.
+[dependencies]
+db = { path = "../db" }
+
+carbon-core = { workspace = true }
+carbon-log-metrics = { workspace = true }
+carbon-raydium-amm-v4-decoder = { workspace = true }
+carbon-yellowstone-grpc-datasource = { workspace = true }
+yellowstone-grpc-proto = { workspace = true }
+solana-transaction-status = { workspace = true }
+
+sqlx = { workspace = true }
+chrono = { workspace = true }
+rust_decimal = { workspace = true }
+
+tokio = { workspace = true }
+anyhow = { workspace = true }
+dotenv = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }
+rustls = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+# Micro-benchmark for decode->row throughput. Run: cargo bench -p ingestion
+[[bench]]
+name = "processing"
+harness = false

@@ -1,0 +1,20 @@
+[package]
+name = "api"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The reader: two GET endpoints over the same Postgres. No write paths.
+[dependencies]
+db = { path = "../db" }
+
+axum = { workspace = true }
+sqlx = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+
+tokio = { workspace = true }
+anyhow = { workspace = true }
+dotenv = { workspace = true }
+env_logger = { workspace = true }
+log = { workspace = true }
