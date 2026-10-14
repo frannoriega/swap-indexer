@@ -1,0 +1,13 @@
+[package]
+name = "types"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+bs58.workspace = true
+clap.workspace = true
+proptest.workspace = true
+solana-client.workspace = true
+solana-sdk.workspace = true
+solana-transaction-status.workspace = true
