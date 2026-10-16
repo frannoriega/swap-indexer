@@ -1,0 +1,9 @@
+[package]
+name = "parser-core"
+version = "0.1.0"
+edition = "2024"
+description = "Library with types to use for parsing Solana transactions"
+
+[dependencies]
+anyhow.workspace = true
+types = { path = "../types"}

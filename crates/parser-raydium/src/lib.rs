@@ -1,12 +1,12 @@
 pub mod instruction;
-use types::{Parser, unpack::{Unpacker, little_endian::LittleEndianUnpacker}};
+use types::{InstructionParser, unpack::{Unpacker, little_endian::LittleEndianUnpacker}};
 
 use crate::instruction::AmmInstruction;
 
 pub struct RaydiumParser;
 
-impl Parser<AmmInstruction> for RaydiumParser {
-    fn parse(instruction_data: &[u8]) -> Result<AmmInstruction, anyhow::Error> {
+impl InstructionParser<AmmInstruction> for RaydiumParser {
+    fn parse(&self, instruction_data: &[u8]) -> Result<AmmInstruction, anyhow::Error> {
         let (id, rest) = instruction_data.split_first()
             .ok_or(anyhow::Error::msg("invalid instruction"))?;
         let mut unpacker = LittleEndianUnpacker::new(rest);
@@ -49,12 +49,13 @@ mod tests {
 
         #[test]
         fn parses_swap_base_in(amount_in: u64, minimum_amount_out: u64) {
+            let parser = RaydiumParser;
             let mut instruction = Vec::<u8>::new();
             instruction.push(9u8);
             instruction.extend_from_slice(&amount_in.to_le_bytes());
             instruction.extend_from_slice(&minimum_amount_out.to_le_bytes());
 
-            let parsed = RaydiumParser::parse(instruction.as_slice()).unwrap();
+            let parsed = parser.parse(instruction.as_slice()).unwrap();
             assert_eq!(
                 AmmInstruction::SwapBaseIn(instruction::SwapBaseInInstruction { amount_in, minimum_amount_out }),
                 parsed
@@ -63,12 +64,13 @@ mod tests {
 
         #[test]
         fn parses_swap_base_out(max_amount_in: u64, amount_out: u64) {
+            let parser = RaydiumParser;
             let mut instruction = Vec::<u8>::new();
             instruction.push(11u8);
             instruction.extend_from_slice(&max_amount_in.to_le_bytes());
             instruction.extend_from_slice(&amount_out.to_le_bytes());
 
-            let parsed = RaydiumParser::parse(instruction.as_slice()).unwrap();
+            let parsed = parser.parse(instruction.as_slice()).unwrap();
             assert_eq!(
                 AmmInstruction::SwapBaseOut(instruction::SwapBaseOutInstruction { max_amount_in, amount_out }),
                 parsed
@@ -77,12 +79,13 @@ mod tests {
 
         #[test]
         fn parses_swap_base_in_v2(amount_in: u64, minimum_amount_out: u64) {
+            let parser = RaydiumParser;
             let mut instruction = Vec::<u8>::new();
             instruction.push(16u8);
             instruction.extend_from_slice(&amount_in.to_le_bytes());
             instruction.extend_from_slice(&minimum_amount_out.to_le_bytes());
 
-            let parsed = RaydiumParser::parse(instruction.as_slice()).unwrap();
+            let parsed = parser.parse(instruction.as_slice()).unwrap();
             assert_eq!(
                 AmmInstruction::SwapBaseInV2(instruction::SwapBaseInInstruction { amount_in, minimum_amount_out }),
                 parsed
@@ -91,12 +94,13 @@ mod tests {
 
         #[test]
         fn parses_swap_base_out_v2(max_amount_in: u64, amount_out: u64) {
+            let parser = RaydiumParser;
             let mut instruction = Vec::<u8>::new();
             instruction.push(17u8);
             instruction.extend_from_slice(&max_amount_in.to_le_bytes());
             instruction.extend_from_slice(&amount_out.to_le_bytes());
 
-            let parsed = RaydiumParser::parse(instruction.as_slice()).unwrap();
+            let parsed = parser.parse(instruction.as_slice()).unwrap();
             assert_eq!(
                 AmmInstruction::SwapBaseOutV2(instruction::SwapBaseOutInstruction { max_amount_in, amount_out }),
                 parsed
