@@ -1353,6 +1353,9 @@ name = "fetcher"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "solana-client",
+ "solana-sdk",
+ "solana-transaction-status",
  "types",
 ]
 

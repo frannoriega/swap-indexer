@@ -1,0 +1,11 @@
+[package]
+name = "fetcher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+solana-client.workspace = true
+solana-sdk.workspace = true
+solana-transaction-status.workspace = true
+types = { path = "../types" }
