@@ -16,6 +16,14 @@ pub trait Fetcher {
     fn get_transaction(&self, signature: &Signature) -> impl Future<Output = Result<RawTx, anyhow::Error>>;
 }
 
+pub struct TokenBalance {
+    pub account: Pubkey,
+    pub mint: Pubkey,
+    pub owner: Option<Pubkey>,
+    pub amount: u64,
+    pub decimals: u8
+}
+
 /**
  * An already parsed Solana transaction
  */
@@ -25,7 +33,13 @@ pub struct RawTx {
     pub block_time: Option<UnixTimestamp>,
     pub account_keys: Vec<Pubkey>,
     pub instructions: Vec<Instruction>,
-    pub status: Option<TransactionError>
+    pub status: Option<TransactionError>,
+
+    pub fee: u64,
+    pub pre_balances: Vec<u64>,
+    pub post_balances: Vec<u64>,
+    pub pre_token_balances: Vec<TokenBalance>,
+    pub post_token_balances: Vec<TokenBalance>
 }
 
 pub struct Instruction {
