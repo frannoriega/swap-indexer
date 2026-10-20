@@ -3,7 +3,7 @@ resolver = "2"
 members = [
   "crates/types",
   "crates/parser-raydium",
-  "crates/fetcher"
+  "crates/rpc-fetcher"
 , "crates/parser-core"]
 
 [workspace.dependencies]
