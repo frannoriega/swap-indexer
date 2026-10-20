@@ -15,6 +15,13 @@ where P: InstructionParser<T> {
 
 impl<P, T> TxParser<P, T>
 where P: InstructionParser<T> {
+    pub fn new(parser: P) -> TxParser<P, T> {
+        TxParser {
+            instruction_parser: parser,
+            _output: PhantomData
+        }
+    }
+
     pub fn parse_transaction(&self, tx: RawTx) -> Result<ParsedTx<T>, anyhow::Error> {
         let mut instructions: Vec<ParsedInstruction<T>> = Vec::new();
         for instr in tx.instructions {
