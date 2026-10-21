@@ -7,4 +7,8 @@ description = "An instruction parser implementation library for Raydium AMM inst
 [dependencies]
 anyhow.workspace = true
 proptest.workspace = true
-types = { path = "../types"}
+types = { path = "../types" }
+solana-sdk.workspace = true
+
+[dev-dependencies]
+types = { path = "../types", features = ["proptest"]}

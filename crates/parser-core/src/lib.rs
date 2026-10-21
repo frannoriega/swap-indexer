@@ -25,7 +25,7 @@ where P: InstructionParser<T> {
     pub fn parse_transaction(&self, tx: RawTx) -> Result<ParsedTx<T>, anyhow::Error> {
         let mut instructions: Vec<ParsedInstruction<T>> = Vec::new();
         for instr in tx.instructions {
-            let parsed = self.instruction_parser.parse(instr.data.as_slice())?;
+            let parsed = self.instruction_parser.parse(&instr.data, &instr.accounts)?;
             instructions.push(ParsedInstruction {
                 program_id: instr.program_id,
                 accounts: instr.accounts.clone(),

@@ -1,12 +1,14 @@
 use solana_sdk::{clock::{Slot, UnixTimestamp}, pubkey::Pubkey, signature::Signature, transaction::TransactionError};
 
 pub mod unpack;
+#[cfg(feature = "proptest")]
+pub mod proptest;
 
 /**
  * Instruction parser trait, to be implemented depending on the DEX
  */
 pub trait InstructionParser<T> {
-    fn parse(&self, instruction_data: &[u8]) -> Result<T, anyhow::Error>;
+    fn parse(&self, instruction_data: &[u8], accounts: &[Pubkey]) -> Result<T, anyhow::Error>;
 }
 
 /**
