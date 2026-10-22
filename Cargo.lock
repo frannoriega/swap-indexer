@@ -2362,6 +2362,7 @@ name = "parser-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "solana-sdk",
  "types",
 ]
 
@@ -2370,6 +2371,7 @@ name = "parser-raydium"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "parser-core",
  "proptest",
  "solana-sdk",
  "types",

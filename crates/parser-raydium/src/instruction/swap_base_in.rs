@@ -1,9 +1,10 @@
 use anyhow::anyhow;
+use parser_core::operation::{Operation, swap::SwapInOperation};
 use solana_sdk::pubkey::Pubkey;
 use types::unpack::Unpacker;
 use types::unpack::little_endian::LittleEndianUnpacker;
 
-use crate::instruction::{AmmInstruction, InstructionProcessor};
+use crate::instruction::InstructionProcessor;
 
 /**
  * Exact input swap instruction.
@@ -31,7 +32,7 @@ impl InstructionProcessor for SwapBaseInInstructionProcessor {
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
         accounts: &[Pubkey],
-    ) -> Result<AmmInstruction, anyhow::Error> {
+    ) -> Result<Operation, anyhow::Error> {
         // Taken directly from the Raydium AMM repo
         // Commit: d26944b
         const ACCOUNT_LEN: usize = 17;
@@ -47,12 +48,12 @@ impl InstructionProcessor for SwapBaseInInstructionProcessor {
         let shift: usize = accounts.len() - ACCOUNT_LEN;
 
         let amount_in = unpacker.u64()?;
-        let minimum_amount_out = unpacker.u64()?;
-        Ok(AmmInstruction::SwapBaseIn(SwapBaseInInstruction {
+        let min_amount_out = unpacker.u64()?;
+        Ok(Operation::SwapIn(SwapInOperation {
             amount_in,
-            minimum_amount_out,
+            min_amount_out,
             source: accounts[SOURCE_IDX + shift],
-            destination: accounts[DEST_IDX + shift],
+            dest: accounts[DEST_IDX + shift],
         }))
     }
 }
@@ -64,7 +65,7 @@ impl InstructionProcessor for SwapBaseInV2InstructionProcessor {
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
         accounts: &[Pubkey],
-    ) -> Result<AmmInstruction, anyhow::Error> {
+    ) -> Result<Operation, anyhow::Error> {
         // Taken directly from the Raydium AMM repo
         // Commit: d26944b
         const ACCOUNT_LEN: usize = 8;
@@ -75,12 +76,12 @@ impl InstructionProcessor for SwapBaseInV2InstructionProcessor {
         const DEST_IDX: usize = 6;
 
         let amount_in = unpacker.u64()?;
-        let minimum_amount_out = unpacker.u64()?;
-        Ok(AmmInstruction::SwapBaseInV2(SwapBaseInInstruction {
+        let min_amount_out = unpacker.u64()?;
+        Ok(Operation::SwapIn(SwapInOperation {
             amount_in,
-            minimum_amount_out,
+            min_amount_out,
             source: accounts[SOURCE_IDX],
-            destination: accounts[DEST_IDX],
+            dest: accounts[DEST_IDX],
         }))
     }
 }
@@ -110,11 +111,11 @@ mod tests {
             let val = res.unwrap();
             assert_eq!(
                 val,
-                AmmInstruction::SwapBaseIn(SwapBaseInInstruction {
+                Operation::SwapIn(SwapInOperation {
                     source: accounts[14],
-                    destination: accounts[15],
+                    dest: accounts[15],
                     amount_in,
-                    minimum_amount_out: min_amount_out
+                    min_amount_out
                 })
             );
         }
@@ -135,11 +136,11 @@ mod tests {
             let val = res.unwrap();
             assert_eq!(
                 val,
-                AmmInstruction::SwapBaseIn(SwapBaseInInstruction {
+                Operation::SwapIn(SwapInOperation {
                     source: accounts[15],
-                    destination: accounts[16],
+                    dest: accounts[16],
                     amount_in,
-                    minimum_amount_out: min_amount_out
+                    min_amount_out
                 })
             );
         }
@@ -175,11 +176,11 @@ mod tests {
             let val = res.unwrap();
             assert_eq!(
                 val,
-                AmmInstruction::SwapBaseInV2(SwapBaseInInstruction {
+                Operation::SwapIn(SwapInOperation {
                     source: accounts[5],
-                    destination: accounts[6],
+                    dest: accounts[6],
                     amount_in,
-                    minimum_amount_out: min_amount_out
+                    min_amount_out
                 })
             );
         }

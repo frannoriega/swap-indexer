@@ -1,10 +1,11 @@
+use parser_core::operation::{Operation, swap::SwapOutOperation};
 use solana_sdk::pubkey::Pubkey;
-use types::unpack::little_endian::LittleEndianUnpacker;
 use types::unpack::Unpacker;
+use types::unpack::little_endian::LittleEndianUnpacker;
 
 use anyhow::anyhow;
 
-use crate::instruction::{AmmInstruction, InstructionProcessor};
+use crate::instruction::InstructionProcessor;
 
 /**
  * Exact output swap instruction.
@@ -22,7 +23,7 @@ pub struct SwapBaseOutInstruction {
     /**
      * The amount of destination tokens requested.
      */
-    pub amount_out: u64
+    pub amount_out: u64,
 }
 
 pub struct SwapBaseOutInstructionProcessor;
@@ -32,12 +33,15 @@ impl InstructionProcessor for SwapBaseOutInstructionProcessor {
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
         accounts: &[Pubkey],
-    ) -> Result<super::AmmInstruction, anyhow::Error> {
+    ) -> Result<Operation, anyhow::Error> {
         // Taken directly from the Raydium AMM repo
         // Commit: d26944b
         const ACCOUNT_LEN: usize = 17;
         if accounts.len() != ACCOUNT_LEN && accounts.len() != ACCOUNT_LEN + 1 {
-            return Err(anyhow!("accounts count is not what we expected: {:}", accounts.len()));
+            return Err(anyhow!(
+                "accounts count is not what we expected: {:}",
+                accounts.len()
+            ));
         }
         const SOURCE_IDX: usize = 14;
         const DEST_IDX: usize = 15;
@@ -46,9 +50,9 @@ impl InstructionProcessor for SwapBaseOutInstructionProcessor {
 
         let max_amount_in = unpacker.u64()?;
         let amount_out = unpacker.u64()?;
-        Ok(AmmInstruction::SwapBaseOut(SwapBaseOutInstruction {
+        Ok(Operation::SwapOut(SwapOutOperation {
             source: accounts[SOURCE_IDX + shift],
-            destination: accounts[DEST_IDX + shift],
+            dest: accounts[DEST_IDX + shift],
             max_amount_in,
             amount_out,
         }))
@@ -62,7 +66,7 @@ impl InstructionProcessor for SwapBaseOutV2InstructionProcessor {
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
         accounts: &[Pubkey],
-    ) -> Result<super::AmmInstruction, anyhow::Error> {
+    ) -> Result<Operation, anyhow::Error> {
         // Taken directly from the Raydium AMM repo
         // Commit: d26944b
         const ACCOUNT_LEN: usize = 8;
@@ -74,12 +78,14 @@ impl InstructionProcessor for SwapBaseOutV2InstructionProcessor {
 
         let max_amount_in = unpacker.u64()?;
         let amount_out = unpacker.u64()?;
-        Ok(AmmInstruction::SwapBaseOutV2(SwapBaseOutInstruction {
-            source: accounts[SOURCE_IDX],
-            destination: accounts[DEST_IDX],
-            max_amount_in,
-            amount_out,
-        }))
+        Ok(Operation::SwapOut(
+            SwapOutOperation {
+                source: accounts[SOURCE_IDX],
+                dest: accounts[DEST_IDX],
+                max_amount_in,
+                amount_out,
+            },
+        ))
     }
 }
 
@@ -108,10 +114,10 @@ mod tests {
             let val = res.unwrap();
             assert_eq!(
                 val,
-                AmmInstruction::SwapBaseOut(SwapBaseOutInstruction { 
-                    source: accounts[14], 
-                    destination: accounts[15], 
-                    max_amount_in, 
+                Operation::SwapOut(SwapOutOperation {
+                    source: accounts[14],
+                    dest: accounts[15],
+                    max_amount_in,
                     amount_out
                 })
             );
@@ -133,10 +139,10 @@ mod tests {
             let val = res.unwrap();
             assert_eq!(
                 val,
-                AmmInstruction::SwapBaseOut(SwapBaseOutInstruction { 
-                    source: accounts[15], 
-                    destination: accounts[16], 
-                    max_amount_in, 
+                Operation::SwapOut(SwapOutOperation { 
+                    source: accounts[15],
+                    dest: accounts[16],
+                    max_amount_in,
                     amount_out
                 })
             );
@@ -173,10 +179,10 @@ mod tests {
             let val = res.unwrap();
             assert_eq!(
                 val,
-                AmmInstruction::SwapBaseOutV2(SwapBaseOutInstruction { 
-                    source: accounts[5], 
-                    destination: accounts[6], 
-                    max_amount_in, 
+                Operation::SwapOut(SwapOutOperation {
+                    source: accounts[5],
+                    dest: accounts[6],
+                    max_amount_in,
                     amount_out
                 })
             );

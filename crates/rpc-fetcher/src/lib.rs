@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::anyhow;
 use solana_client::{
@@ -110,34 +110,41 @@ fn resolve_transaction(
     }
     // Build the instructions
     let mut instructions = Vec::new();
+    let mut inner_by_idx: HashMap<u8, Vec<UiInstruction>> = inner_instrs
+        .into_iter()
+        .map(|instr| (instr.index, instr.instructions))
+        .collect();
     for (instr_idx, instr) in message.instructions().iter().enumerate() {
+        let instr_idx = instr_idx as u8;
         instructions.push(Instruction {
             program_id: account_keys[instr.program_id_index as usize],
             accounts: get_accounts(&account_keys, &instr.accounts)?,
             stack_depth: 0, // 0 = top level
-            outer_idx: instr_idx as u8,
+            outer_idx: instr_idx,
             data: instr.data.clone(),
         });
-    }
-    for inner_instr in inner_instrs {
-        let tx_idx = inner_instr.index;
-        for instr in inner_instr.instructions {
-            match instr {
-                UiInstruction::Compiled(compiled_instr) => {
-                    instructions.push(Instruction {
-                        program_id: *account_keys
-                            .get(compiled_instr.program_id_index as usize)
-                            .ok_or_else(|| anyhow!("index not found in account keys"))?,
-                        accounts: get_accounts(&account_keys, &compiled_instr.accounts)?,
-                        stack_depth: compiled_instr
-                            .stack_height
-                            .ok_or_else(|| anyhow!("inner instruction missing depth"))?,
-                        data: decode_inner(compiled_instr.data)?,
-                        outer_idx: tx_idx,
-                    });
-                }
-                UiInstruction::Parsed(_) => {
-                    return Err(anyhow!("inner instruction data in wrong shape"));
+
+        // Store the current instruction CPI's before moving to the next,
+        // so we have all the instructions in execution order
+        if let Some(i) = inner_by_idx.remove(&instr_idx) {
+            for inner_instr in i {
+                match inner_instr {
+                    UiInstruction::Compiled(compiled_instr) => {
+                        instructions.push(Instruction {
+                            program_id: *account_keys
+                                .get(compiled_instr.program_id_index as usize)
+                                .ok_or_else(|| anyhow!("index not found in account keys"))?,
+                            accounts: get_accounts(&account_keys, &compiled_instr.accounts)?,
+                            stack_depth: compiled_instr
+                                .stack_height
+                                .ok_or_else(|| anyhow!("inner instruction missing depth"))?,
+                            data: decode_inner(compiled_instr.data)?,
+                            outer_idx: instr_idx,
+                        });
+                    }
+                    UiInstruction::Parsed(_) => {
+                        return Err(anyhow!("inner instruction data in wrong shape"));
+                    }
                 }
             }
         }
@@ -158,7 +165,7 @@ fn resolve_transaction(
             meta.post_token_balances
                 .ok_or_else(|| anyhow!("Pre-token balances not available"))?,
         )?,
-        account_keys
+        account_keys,
     })
 }
 
@@ -209,7 +216,7 @@ impl Fetcher for RpcFetcher {
             pre_balances: resolved_tx.pre_balances,
             post_balances: resolved_tx.post_balances,
             pre_token_balances: resolved_tx.pre_token_balances,
-            post_token_balances: resolved_tx.post_token_balances
+            post_token_balances: resolved_tx.post_token_balances,
         })
     }
 }

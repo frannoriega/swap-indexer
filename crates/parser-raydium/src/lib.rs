@@ -2,11 +2,12 @@ pub mod instruction;
 use std::{collections::HashMap, sync::LazyLock};
 
 use anyhow::anyhow;
+use parser_core::{InstructionParser, operation::Operation};
 use solana_sdk::pubkey::Pubkey;
-use types::{InstructionParser, unpack::little_endian::LittleEndianUnpacker};
+use types::unpack::little_endian::LittleEndianUnpacker;
 
 use crate::instruction::{
-    AmmInstruction, InstructionProcessor,
+    InstructionProcessor,
     swap_base_in::{SwapBaseInInstructionProcessor, SwapBaseInV2InstructionProcessor},
     swap_base_out::{SwapBaseOutInstructionProcessor, SwapBaseOutV2InstructionProcessor},
 };
@@ -14,10 +15,10 @@ use crate::instruction::{
 pub struct RaydiumParser;
 
 enum Processor {
-    SwapBaseInProcessor(SwapBaseInInstructionProcessor),
-    SwapBaseOutProcessor(SwapBaseOutInstructionProcessor),
-    SwapBaseInV2Processor(SwapBaseInV2InstructionProcessor),
-    SwapBaseOutV2Processor(SwapBaseOutV2InstructionProcessor),
+    SwapBaseIn(SwapBaseInInstructionProcessor),
+    SwapBaseOut(SwapBaseOutInstructionProcessor),
+    SwapBaseInV2(SwapBaseInV2InstructionProcessor),
+    SwapBaseOutV2(SwapBaseOutV2InstructionProcessor),
 }
 
 impl InstructionProcessor for Processor {
@@ -25,12 +26,12 @@ impl InstructionProcessor for Processor {
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
         accounts: &[Pubkey],
-    ) -> Result<AmmInstruction, anyhow::Error> {
+    ) -> Result<Operation, anyhow::Error> {
         match self {
-            Processor::SwapBaseInProcessor(proc) => proc.process(unpacker, accounts),
-            Processor::SwapBaseOutProcessor(proc) => proc.process(unpacker, accounts),
-            Processor::SwapBaseInV2Processor(proc) => proc.process(unpacker, accounts),
-            Processor::SwapBaseOutV2Processor(proc) => proc.process(unpacker, accounts),
+            Processor::SwapBaseIn(proc) => proc.process(unpacker, accounts),
+            Processor::SwapBaseOut(proc) => proc.process(unpacker, accounts),
+            Processor::SwapBaseInV2(proc) => proc.process(unpacker, accounts),
+            Processor::SwapBaseOutV2(proc) => proc.process(unpacker, accounts),
         }
     }
 }
@@ -39,46 +40,47 @@ static PROCESSORS: LazyLock<HashMap<u8, Processor>> = LazyLock::new(|| {
     let mut map = HashMap::new();
     map.insert(
         9,
-        Processor::SwapBaseInProcessor(SwapBaseInInstructionProcessor),
+        Processor::SwapBaseIn(SwapBaseInInstructionProcessor),
     );
     map.insert(
         11,
-        Processor::SwapBaseOutProcessor(SwapBaseOutInstructionProcessor),
+        Processor::SwapBaseOut(SwapBaseOutInstructionProcessor),
     );
     map.insert(
         16,
-        Processor::SwapBaseInV2Processor(SwapBaseInV2InstructionProcessor),
+        Processor::SwapBaseInV2(SwapBaseInV2InstructionProcessor),
     );
     map.insert(
         17,
-        Processor::SwapBaseOutV2Processor(SwapBaseOutV2InstructionProcessor),
+        Processor::SwapBaseOutV2(SwapBaseOutV2InstructionProcessor),
     );
 
     map
 });
 
-impl InstructionParser<AmmInstruction> for RaydiumParser {
+impl InstructionParser for RaydiumParser {
     fn parse(
         &self,
         instruction_data: &[u8],
         accounts: &[Pubkey],
-    ) -> Result<AmmInstruction, anyhow::Error> {
+    ) -> Result<Option<Operation>, anyhow::Error> {
         let (id, rest) = instruction_data
             .split_first()
             .ok_or_else(|| anyhow!("invalid instruction"))?;
         let mut unpacker = LittleEndianUnpacker::new(rest);
-        let processor = PROCESSORS
-            .get(id)
-            .ok_or_else(|| anyhow!("unknown program id"))?;
-        processor.process(&mut unpacker, accounts)
+        let processor = match PROCESSORS.get(id) {
+            Some(p) => p,
+            None => return Ok(None),
+        };
+        Ok(Some(processor.process(&mut unpacker, accounts)?))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::assert_matches;
     use proptest::prelude::*;
+    use std::assert_matches;
     use types::proptest::addresses;
 
     proptest! {

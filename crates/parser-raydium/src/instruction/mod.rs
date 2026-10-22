@@ -1,6 +1,7 @@
 pub mod swap_base_in;
 pub mod swap_base_out;
 
+use parser_core::operation::Operation;
 use solana_sdk::pubkey::Pubkey;
 use types::unpack::little_endian::LittleEndianUnpacker;
 
@@ -20,5 +21,5 @@ pub trait InstructionProcessor {
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
         accounts: &[Pubkey],
-    ) -> Result<AmmInstruction, anyhow::Error>;
+    ) -> Result<Operation, anyhow::Error>;
 }

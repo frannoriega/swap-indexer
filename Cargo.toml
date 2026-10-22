@@ -19,3 +19,7 @@ solana-client = "4.3.0"
 # TODO: Update this once the other dependencies use solana-transaction-error ^4.1.0
 solana-sdk = "4.1.0"
 solana-transaction-status = "4.3.0"
+types = { path = "crates/types" }
+parser-core = { path = "crates/parser-core" }
+parser-raydium = { path = "crates/parser-raydium" }
+rpc-fetcher = { path = "crates/rpc-fetcher" }

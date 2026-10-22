@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-clap = { version = "4.6.7", features = ["derive"] }
-types = { path = "../types" }
-parser-core = { path = "../parser-core" }
-parser-raydium = { path = "../parser-raydium" }
-rpc-fetcher = { path = "../rpc-fetcher" }
+clap = { workspace = true, features = ["derive"] }
+types.workspace = true
+parser-core.workspace = true
+parser-raydium.workspace = true
+rpc-fetcher.workspace = true
 tokio = { version = "1", features = ["full"] }
 solana-sdk.workspace = true
 anyhow.workspace = true

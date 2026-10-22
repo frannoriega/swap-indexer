@@ -54,6 +54,6 @@ async fn main() -> Result<(), anyhow::Error> {
         FetcherOpt::Rpc => RpcFetcher::new(url.to_owned()),
     };
     let tx = fetcher.get_transaction(signature).await?;
-    let result = process(tx);
+    let result = process(tx)?;
     Ok(())
 }
