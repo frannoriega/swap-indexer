@@ -1,13 +1,18 @@
 pub mod swap;
+pub mod transfer;
 
 use solana_sdk::pubkey::Pubkey;
 
-use crate::instruction::operation::swap::{SwapInOperation, SwapOutOperation};
+use crate::instruction::operation::{
+    swap::{SwapInOperation, SwapOutOperation},
+    transfer::TransferOperation,
+};
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Operation {
     SwapIn(SwapInOperation),
     SwapOut(SwapOutOperation),
+    Transfer(TransferOperation),
 }
 
 impl Operation {
@@ -15,6 +20,7 @@ impl Operation {
         match self {
             Operation::SwapIn(s) => vec![s.source],
             Operation::SwapOut(s) => vec![s.source],
+            Operation::Transfer(s) => vec![s.source],
         }
     }
 
@@ -22,6 +28,7 @@ impl Operation {
         match self {
             Operation::SwapIn(s) => vec![s.dest],
             Operation::SwapOut(s) => vec![s.dest],
+            Operation::Transfer(s) => vec![s.dest],
         }
     }
 }

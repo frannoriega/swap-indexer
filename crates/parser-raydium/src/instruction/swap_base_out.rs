@@ -1,11 +1,10 @@
+use parser_core::LEOperationParser;
 use parser_core::instruction::operation::{Operation, swap::SwapOutOperation};
 use solana_sdk::pubkey::Pubkey;
 use types::unpack::Unpacker;
 use types::unpack::little_endian::LittleEndianUnpacker;
 
 use anyhow::anyhow;
-
-use crate::instruction::InstructionProcessor;
 
 /**
  * Exact output swap instruction.
@@ -26,9 +25,9 @@ pub struct SwapBaseOutInstruction {
     pub amount_out: u64,
 }
 
-pub struct SwapBaseOutInstructionProcessor;
+pub struct SwapBaseOutOperationParser;
 
-impl InstructionProcessor for SwapBaseOutInstructionProcessor {
+impl LEOperationParser for SwapBaseOutOperationParser {
     fn process<'a>(
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
@@ -59,9 +58,9 @@ impl InstructionProcessor for SwapBaseOutInstructionProcessor {
     }
 }
 
-pub struct SwapBaseOutV2InstructionProcessor;
+pub struct SwapBaseOutV2OperationParser;
 
-impl InstructionProcessor for SwapBaseOutV2InstructionProcessor {
+impl LEOperationParser for SwapBaseOutV2OperationParser {
     fn process<'a>(
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
@@ -104,7 +103,7 @@ mod tests {
         instruction.extend_from_slice(&max_amount_in.to_le_bytes());
         instruction.extend_from_slice(&amount_out.to_le_bytes());
         let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-        let processor = SwapBaseOutInstructionProcessor;
+        let processor = SwapBaseOutOperationParser;
         let res = processor.process(&mut unpacker, accounts.as_slice());
 
         assert_matches!(res, Ok(_));
@@ -130,7 +129,7 @@ mod tests {
         instruction.extend_from_slice(&max_amount_in.to_le_bytes());
         instruction.extend_from_slice(&amount_out.to_le_bytes());
         let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-        let processor = SwapBaseOutInstructionProcessor;
+        let processor = SwapBaseOutOperationParser;
         let res = processor.process(&mut unpacker, accounts.as_slice());
 
         assert_matches!(res, Ok(_));
@@ -156,7 +155,7 @@ mod tests {
         instruction.extend_from_slice(&max_amount_in.to_le_bytes());
         instruction.extend_from_slice(&amount_out.to_le_bytes());
         let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-        let processor = SwapBaseOutInstructionProcessor;
+        let processor = SwapBaseOutOperationParser;
         let res = processor.process(&mut unpacker, accounts.as_slice());
 
         assert_matches!(res, Err(_));
@@ -172,7 +171,7 @@ mod tests {
         instruction.extend_from_slice(&max_amount_in.to_le_bytes());
         instruction.extend_from_slice(&amount_out.to_le_bytes());
         let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-        let processor = SwapBaseOutV2InstructionProcessor;
+        let processor = SwapBaseOutV2OperationParser;
         let res = processor.process(&mut unpacker, accounts.as_slice());
 
         assert_matches!(res, Ok(_));
@@ -198,7 +197,7 @@ mod tests {
         instruction.extend_from_slice(&max_amount_in.to_le_bytes());
         instruction.extend_from_slice(&amount_out.to_le_bytes());
         let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-        let processor = SwapBaseOutV2InstructionProcessor;
+        let processor = SwapBaseOutV2OperationParser;
         let res = processor.process(&mut unpacker, accounts.as_slice());
 
         assert_matches!(res, Err(_));

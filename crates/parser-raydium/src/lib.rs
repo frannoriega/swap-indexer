@@ -3,54 +3,47 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use anyhow::anyhow;
 use parser_core::{
-    InstructionParser,
+    InstructionParser, LEOperationParser,
     instruction::{ParsedInstruction, operation::Operation},
 };
 use solana_sdk::pubkey::Pubkey;
 use types::{Instruction, unpack::little_endian::LittleEndianUnpacker};
 
 use crate::instruction::{
-    InstructionProcessor,
-    swap_base_in::{SwapBaseInInstructionProcessor, SwapBaseInV2InstructionProcessor},
-    swap_base_out::{SwapBaseOutInstructionProcessor, SwapBaseOutV2InstructionProcessor},
+    swap_base_in::{SwapBaseInOperationParser, SwapBaseInV2OperationParser},
+    swap_base_out::{SwapBaseOutOperationParser, SwapBaseOutV2OperationParser},
 };
 
 pub struct RaydiumParser;
 
-enum Processor {
-    SwapBaseIn(SwapBaseInInstructionProcessor),
-    SwapBaseOut(SwapBaseOutInstructionProcessor),
-    SwapBaseInV2(SwapBaseInV2InstructionProcessor),
-    SwapBaseOutV2(SwapBaseOutV2InstructionProcessor),
+enum Parser {
+    SwapBaseIn(SwapBaseInOperationParser),
+    SwapBaseOut(SwapBaseOutOperationParser),
+    SwapBaseInV2(SwapBaseInV2OperationParser),
+    SwapBaseOutV2(SwapBaseOutV2OperationParser),
 }
 
-impl InstructionProcessor for Processor {
+impl LEOperationParser for Parser {
     fn process<'a>(
         &'a self,
         unpacker: &'a mut LittleEndianUnpacker<'a>,
         accounts: &[Pubkey],
     ) -> Result<Operation, anyhow::Error> {
         match self {
-            Processor::SwapBaseIn(proc) => proc.process(unpacker, accounts),
-            Processor::SwapBaseOut(proc) => proc.process(unpacker, accounts),
-            Processor::SwapBaseInV2(proc) => proc.process(unpacker, accounts),
-            Processor::SwapBaseOutV2(proc) => proc.process(unpacker, accounts),
+            Parser::SwapBaseIn(proc) => proc.process(unpacker, accounts),
+            Parser::SwapBaseOut(proc) => proc.process(unpacker, accounts),
+            Parser::SwapBaseInV2(proc) => proc.process(unpacker, accounts),
+            Parser::SwapBaseOutV2(proc) => proc.process(unpacker, accounts),
         }
     }
 }
 
-static PROCESSORS: LazyLock<HashMap<u8, Processor>> = LazyLock::new(|| {
+static PARSERS: LazyLock<HashMap<u8, Parser>> = LazyLock::new(|| {
     let mut map = HashMap::new();
-    map.insert(9, Processor::SwapBaseIn(SwapBaseInInstructionProcessor));
-    map.insert(11, Processor::SwapBaseOut(SwapBaseOutInstructionProcessor));
-    map.insert(
-        16,
-        Processor::SwapBaseInV2(SwapBaseInV2InstructionProcessor),
-    );
-    map.insert(
-        17,
-        Processor::SwapBaseOutV2(SwapBaseOutV2InstructionProcessor),
-    );
+    map.insert(9, Parser::SwapBaseIn(SwapBaseInOperationParser));
+    map.insert(11, Parser::SwapBaseOut(SwapBaseOutOperationParser));
+    map.insert(16, Parser::SwapBaseInV2(SwapBaseInV2OperationParser));
+    map.insert(17, Parser::SwapBaseOutV2(SwapBaseOutV2OperationParser));
 
     map
 });
@@ -62,12 +55,12 @@ impl InstructionParser for RaydiumParser {
             .split_first()
             .ok_or_else(|| anyhow!("invalid instruction"))?;
         let mut unpacker = LittleEndianUnpacker::new(rest);
-        let processor = match PROCESSORS.get(id) {
+        let parser = match PARSERS.get(id) {
             Some(p) => p,
             None => return Ok(None),
         };
         Ok(Some(ParsedInstruction {
-            operation: processor.process(&mut unpacker, &instruction.accounts)?,
+            operation: parser.process(&mut unpacker, &instruction.accounts)?,
             outer_idx: instruction.outer_idx,
             stack_depth: instruction.stack_depth,
         }))
