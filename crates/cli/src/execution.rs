@@ -74,10 +74,10 @@ impl ExecutionGraph {
             match instr_grouping.get(&exec.outer_idx) {
                 Some(&root) => {
                     execution_groups.union(root.index(), node.index());
-                }
+                },
                 None => {
                     instr_grouping.insert(exec.outer_idx, node);
-                }
+                },
             };
 
             for src in sources {

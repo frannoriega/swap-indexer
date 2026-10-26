@@ -1,28 +1,40 @@
 [workspace]
 resolver = "2"
 members = [
-  "crates/types",
-  "crates/parser-raydium",
-  "crates/rpc-fetcher",
-  "crates/parser-core",
-  "crates/cli",
-  "crates/utils",
+    "crates/cli",
+    "crates/parser-core",
+    "crates/parser-raydium",
+    "crates/rpc-fetcher",
+    "crates/types",
+    "crates/utils",
 ]
 
 [workspace.dependencies]
 anyhow = "1.0.104"
 bs58 = "0.5.1"
 clap = "4.6.7"
+parser-core = { path = "crates/parser-core" }
+parser-raydium = { path = "crates/parser-raydium" }
+proptest = "1.12.0"
+rpc-fetcher = { path = "crates/rpc-fetcher" }
 solana-client = "4.3.0"
 # Using older sdk version to align solana-client and solana-transaction-status
 # to use the same solana-transaction-error dependency
 # TODO: Update this once the other dependencies use solana-transaction-error ^4.1.0
 solana-sdk = "4.1.0"
 solana-transaction-status = "4.3.0"
-types = { path = "crates/types" }
-parser-core = { path = "crates/parser-core" }
-parser-raydium = { path = "crates/parser-raydium" }
-rpc-fetcher = { path = "crates/rpc-fetcher" }
-utils = { path = "crates/utils" }
 test-strategy = "0.4.5"
-proptest = "1.12.0"
+types = { path = "crates/types" }
+utils = { path = "crates/utils" }
+
+[workspace.lints.rust]
+unused_imports = "warn"
+unused_must_use = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+dbg_macro = "warn"
+todo = "warn"
+unwrap_used = "warn"
+expect_used = "warn"

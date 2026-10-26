@@ -2,7 +2,10 @@ pub mod instruction;
 use std::{collections::HashMap, sync::LazyLock};
 
 use anyhow::anyhow;
-use parser_core::{InstructionParser, instruction::{ParsedInstruction, operation::Operation}};
+use parser_core::{
+    InstructionParser,
+    instruction::{ParsedInstruction, operation::Operation},
+};
 use solana_sdk::pubkey::Pubkey;
 use types::{Instruction, unpack::little_endian::LittleEndianUnpacker};
 

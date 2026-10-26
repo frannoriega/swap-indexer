@@ -4,8 +4,8 @@ use std::{
 };
 
 use anyhow::anyhow;
-use parser_raydium::RaydiumParser;
 use parser_core::InstructionParser;
+use parser_raydium::RaydiumParser;
 use solana_sdk::pubkey;
 use solana_sdk::pubkey::Pubkey;
 use types::{RawTx, TokenBalance};
@@ -19,10 +19,7 @@ const RAYDIUM_AMM_V4: Pubkey = pubkey!("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt
 
 static PROGRAMS: LazyLock<HashMap<Pubkey, Parser>> = LazyLock::new(|| {
     let mut map = HashMap::new();
-    map.insert(
-        RAYDIUM_AMM_V4,
-        Parser::Raydium(RaydiumParser),
-    );
+    map.insert(RAYDIUM_AMM_V4, Parser::Raydium(RaydiumParser));
     map
 });
 
@@ -35,13 +32,13 @@ pub fn process(tx: RawTx) -> Result<(), anyhow::Error> {
     if let Some(err) = tx.status {
         return Err(anyhow!("Transaction failed: {:}", err));
     }
-    let deltas = compute_deltas(&tx);
+    let _deltas = compute_deltas(&tx);
     for instr in &tx.instructions {
         let parsed_instr = match PROGRAMS.get(&instr.program_id) {
             Some(Parser::Raydium(parser)) => parser.parse(&instr)?,
             None => continue,
         };
-        let operation = match parsed_instr {
+        let _operation = match parsed_instr {
             Some(op) => op,
             None => continue,
         };
@@ -51,12 +48,14 @@ pub fn process(tx: RawTx) -> Result<(), anyhow::Error> {
 
 struct Deltas {
     token_deltas: HashMap<Pubkey, Balance>,
-    mints: HashMap<Pubkey, Pubkey>
+    mints: HashMap<Pubkey, Pubkey>,
 }
 
 fn compute_deltas(tx: &RawTx) -> Result<Deltas, anyhow::Error> {
     let wallet = tx.account_keys[0];
     let mut mints_by_account = HashMap::new();
+    // We need to join the accounts in pre and post token balances.
+    // We only need the accounts owned by the signer (`wallet`)
     let mut token_deltas = HashMap::new();
     token_deltas.insert(
         WSOL,
@@ -67,13 +66,21 @@ fn compute_deltas(tx: &RawTx) -> Result<Deltas, anyhow::Error> {
         },
     );
     let mut pre_token_balances = HashMap::new();
+
+    // Iterate the pre token balances and store:
+    // 1. The token associated with their account
+    // 2. The token balance of their account
     for pre in tx.pre_token_balances.iter() {
+        // 1. Store the token associated with the account
         mints_by_account.insert(pre.account, pre.mint);
+        // Guard against duplicated addresses.
+        // Such scenario means a malformed RPC response.
         if pre_token_balances.contains_key(&pre.account) {
             return Err(anyhow!(
                 "malformed rpc response: repeated account in pre token balances"
             ));
         }
+        // 2. Store the balance of the account
         pre_token_balances.insert(
             pre.account,
             TokenBalance {
@@ -90,8 +97,12 @@ fn compute_deltas(tx: &RawTx) -> Result<Deltas, anyhow::Error> {
         // Such scenario means a malformed RPC response.
         // Dropped at the end of this scope
         let mut post_token_accounts = HashSet::new();
+        // We will now be using the pre_token_balances for the join,
+        // so here we will make use of the `owner` field.
+        // We only care about token balances owned by the signer (`wallet`)
         for post in tx.post_token_balances.iter() {
             if post.owner == Some(wallet) {
+                // Store the mint address associated with the account
                 mints_by_account.insert(post.account, post.mint);
                 if !post_token_accounts.insert(post.account) {
                     return Err(anyhow!(
@@ -100,6 +111,9 @@ fn compute_deltas(tx: &RawTx) -> Result<Deltas, anyhow::Error> {
                 }
                 match pre_token_balances.remove(&post.account) {
                     Some(pre) => {
+                        // If a `post` account shows up in the `pre_token_balances` as
+                        // well, then compute the difference (post - pre) and store it
+                        // under the account token balance
                         token_deltas
                             .entry(post.mint)
                             .or_insert(Balance {
@@ -107,8 +121,10 @@ fn compute_deltas(tx: &RawTx) -> Result<Deltas, anyhow::Error> {
                                 decimals: post.decimals,
                             })
                             .amount += post.amount as i128 - pre.amount as i128
-                    }
+                    },
                     None => {
+                        // If a `post` account shows up only in `post_balance_tokens`, that means
+                        // the account was created mid-transaction
                         token_deltas
                             .entry(post.mint)
                             .or_insert(Balance {
@@ -116,11 +132,15 @@ fn compute_deltas(tx: &RawTx) -> Result<Deltas, anyhow::Error> {
                                 decimals: post.decimals,
                             })
                             .amount += post.amount as i128
-                    }
+                    },
                 };
             }
         }
     }
+    // Now there's a case where some accounts could be closed mid-transaction.
+    // If that happened, then those accounts would not be present in `post_token_balances`.
+    // So, we iterate whatever accounts were left in `pre_token_balances` and we compute the deltas
+    // for those that are owned by the signer (`wallet`)
     for (_, leftover) in pre_token_balances.drain() {
         if leftover.owner == Some(wallet) {
             token_deltas
@@ -135,5 +155,8 @@ fn compute_deltas(tx: &RawTx) -> Result<Deltas, anyhow::Error> {
     // Remove movements in which the delta is zero
     // That's just noise
     token_deltas.retain(|_, v| v.amount != 0);
-    Ok(Deltas { token_deltas, mints: mints_by_account })
+    Ok(Deltas {
+        token_deltas,
+        mints: mints_by_account,
+    })
 }

@@ -6,5 +6,8 @@ description = "Library with types to use for parsing Solana transactions"
 
 [dependencies]
 anyhow.workspace = true
-types.workspace = true
 solana-sdk.workspace = true
+types.workspace = true
+
+[lints]
+workspace = true

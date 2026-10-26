@@ -141,10 +141,10 @@ fn resolve_transaction(
                             data: decode_inner(compiled_instr.data)?,
                             outer_idx: instr_idx,
                         });
-                    }
+                    },
                     UiInstruction::Parsed(_) => {
                         return Err(anyhow!("inner instruction data in wrong shape"));
-                    }
+                    },
                 }
             }
         }

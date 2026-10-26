@@ -7,3 +7,6 @@ description = "Shared test utilities (proptest strategies) used across the works
 [dependencies]
 proptest.workspace = true
 solana-sdk.workspace = true
+
+[lints]
+workspace = true

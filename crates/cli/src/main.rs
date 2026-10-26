@@ -1,5 +1,5 @@
-mod process;
 mod execution;
+mod process;
 
 use anyhow::anyhow;
 use clap::{Arg, Command, ValueEnum, value_parser};
@@ -55,6 +55,6 @@ async fn main() -> Result<(), anyhow::Error> {
         FetcherOpt::Rpc => RpcFetcher::new(url.to_owned()),
     };
     let tx = fetcher.get_transaction(signature).await?;
-    let result = process(tx)?;
+    let _result = process(tx)?;
     Ok(())
 }
