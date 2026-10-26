@@ -91,7 +91,7 @@ mod tests {
     use super::*;
     use std::assert_matches;
     use test_strategy::proptest;
-    use types::proptest::addresses;
+    use utils::proptest::addresses;
 
     #[proptest]
     fn process_swap_base_in(

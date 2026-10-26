@@ -6,6 +6,7 @@ members = [
   "crates/rpc-fetcher",
   "crates/parser-core",
   "crates/cli",
+  "crates/utils",
 ]
 
 [workspace.dependencies]
@@ -22,5 +23,6 @@ types = { path = "crates/types" }
 parser-core = { path = "crates/parser-core" }
 parser-raydium = { path = "crates/parser-raydium" }
 rpc-fetcher = { path = "crates/rpc-fetcher" }
+utils = { path = "crates/utils" }
 test-strategy = "0.4.5"
 proptest = "1.12.0"

@@ -1,11 +1,11 @@
 use std::ops::{Range, RangeInclusive};
 
-use super::*;
-use ::proptest::prelude::*;
+use proptest::prelude::*;
+use solana_sdk::pubkey::Pubkey;
 
 pub enum Length {
     Exact(usize),
-    Range(RangeInclusive<usize>)
+    Range(RangeInclusive<usize>),
 }
 
 impl From<usize> for Length {
@@ -31,12 +31,17 @@ pub fn addresses(len_range: impl Into<Length>) -> impl Strategy<Value = Vec<Pubk
         Length::Exact(val) => val..(val + 1),
         Length::Range(range) => *range.start()..(*range.end() + 1),
     };
-    prop::collection::vec(
-        any::<[u8; 32]>().prop_map(Pubkey::new_from_array),
-        range,
-    )
+    prop::collection::vec(any::<[u8; 32]>().prop_map(Pubkey::new_from_array), range)
 }
 
 pub fn address() -> impl Strategy<Value = Pubkey> {
-    any::<[u8;32]>().prop_map(Pubkey::new_from_array)
+    any::<[u8; 32]>().prop_map(Pubkey::new_from_array)
+}
+
+pub fn bytes(len_range: impl Into<Length>) -> impl Strategy<Value = Vec<u8>> {
+    let range: Range<usize> = match len_range.into() {
+        Length::Exact(val) => val..(val + 1),
+        Length::Range(range) => *range.start()..(*range.end() + 1),
+    };
+    prop::collection::vec(any::<u8>(), range)
 }

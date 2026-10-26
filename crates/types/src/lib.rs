@@ -1,5 +1,3 @@
-#[cfg(feature = "proptest")]
-pub mod proptest;
 pub mod unpack;
 
 use solana_sdk::{

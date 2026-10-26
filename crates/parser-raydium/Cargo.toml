@@ -11,6 +11,6 @@ solana-sdk.workspace = true
 parser-core.workspace = true
 
 [dev-dependencies]
-types = { workspace = true, features = ["proptest"] }
+utils.workspace = true
 proptest.workspace = true
 test-strategy.workspace = true

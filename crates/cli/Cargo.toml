@@ -15,7 +15,7 @@ solana-sdk.workspace = true
 anyhow.workspace = true
 
 [dev-dependencies]
-types = { workspace = true, features = ["proptest"] }
+utils.workspace = true
 test-strategy = "0.4.5"
 proptest.workspace = true
 rand = "0.10.3"

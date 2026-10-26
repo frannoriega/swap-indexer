@@ -7,10 +7,11 @@ edition = "2024"
 anyhow.workspace = true
 bs58.workspace = true
 clap.workspace = true
-proptest = { workspace = true, optional = true }
 solana-client.workspace = true
 solana-sdk.workspace = true
 solana-transaction-status.workspace = true
 
-[features]
-proptest = ["dep:proptest"]
+[dev-dependencies]
+test-strategy.workspace = true
+proptest.workspace = true
+utils.workspace = true

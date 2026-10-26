@@ -136,7 +136,7 @@ mod tests {
     #[cfg(test)]
     use proptest::{prop_assert, prop_assert_eq};
     use test_strategy::proptest;
-    use types::proptest::{address, addresses};
+    use utils::proptest::{address, addresses};
 
     use crate::execution::ExecutionGraph;
 

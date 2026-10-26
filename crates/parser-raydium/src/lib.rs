@@ -76,7 +76,7 @@ mod tests {
     use super::*;
     use std::assert_matches;
     use test_strategy::proptest;
-    use types::proptest::{address, addresses};
+    use utils::proptest::{address, addresses};
 
     #[proptest]
     fn parses_swap_base_in(
@@ -150,7 +150,7 @@ mod tests {
     #[proptest]
     fn parses_swap_base_out_v2(
         #[strategy(address())] program_id: Pubkey,
-        #[strategy(addresses(17..=18))] accounts: Vec<Pubkey>,
+        #[strategy(addresses(8))] accounts: Vec<Pubkey>,
         max_amount_in: u64,
         amount_out: u64,
     ) {

@@ -2,7 +2,7 @@ use crate::unpack::Unpacker;
 
 pub struct BigEndianUnpacker<'a> {
     data: &'a [u8],
-    position: usize
+    position: usize,
 }
 
 impl<'a> BigEndianUnpacker<'a> {
@@ -16,7 +16,8 @@ impl<'a> Unpacker for BigEndianUnpacker<'a> {
         let after_read = self.position + 8;
         // 8 = size of a u64
         if self.data.len() >= after_read {
-            let field: u64 = self.data
+            let field: u64 = self
+                .data
                 .get(self.position..after_read)
                 .and_then(|slice| slice.try_into().ok())
                 .map(u64::from_be_bytes)
@@ -32,22 +33,21 @@ impl<'a> Unpacker for BigEndianUnpacker<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use proptest::prelude::*;
+    use test_strategy::proptest;
+    use utils::proptest::bytes;
 
-    proptest! {
-        #[test]
-        fn unpacks_u64(val: u64) {
-            let bytes = val.to_be_bytes();
-            let mut unpacker = BigEndianUnpacker::new(&bytes);
-            let unpacked = unpacker.u64().unwrap();
+    #[proptest]
+    fn unpacks_u64(val: u64) {
+        let bytes = val.to_be_bytes();
+        let mut unpacker = BigEndianUnpacker::new(&bytes);
+        let unpacked = unpacker.u64().unwrap();
 
-            assert_eq!(val, unpacked);
-        }
+        assert_eq!(val, unpacked);
+    }
 
-        #[test]
-        fn unpacks_u64_fails_no_more_data(val: u64) {
-            let mut unpacker = BigEndianUnpacker::new(&[0u8, 4u8, 6u8]);
-            assert!(unpacker.u64().is_err());
-        }
+    #[proptest]
+    fn unpacks_u64_fails_no_more_data(#[strategy(bytes(0..=7))] bad_bytes: Vec<u8>) {
+        let mut unpacker = BigEndianUnpacker::new(&bad_bytes);
+        assert!(unpacker.u64().is_err());
     }
 }

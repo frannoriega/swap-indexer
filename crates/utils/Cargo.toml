@@ -1,0 +1,9 @@
+[package]
+name = "utils"
+version = "0.1.0"
+edition = "2024"
+description = "Shared test utilities (proptest strategies) used across the workspace"
+
+[dependencies]
+proptest.workspace = true
+solana-sdk.workspace = true
