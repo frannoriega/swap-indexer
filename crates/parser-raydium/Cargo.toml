@@ -6,10 +6,11 @@ description = "An instruction parser implementation library for Raydium AMM inst
 
 [dependencies]
 anyhow.workspace = true
-proptest.workspace = true
 types.workspace = true
 solana-sdk.workspace = true
 parser-core.workspace = true
 
 [dev-dependencies]
 types = { workspace = true, features = ["proptest"] }
+proptest.workspace = true
+test-strategy.workspace = true

@@ -10,5 +10,12 @@ parser-core.workspace = true
 parser-raydium.workspace = true
 rpc-fetcher.workspace = true
 tokio = { version = "1", features = ["full"] }
+petgraph = "0.8.3"
 solana-sdk.workspace = true
 anyhow.workspace = true
+
+[dev-dependencies]
+types = { workspace = true, features = ["proptest"] }
+test-strategy = "0.4.5"
+proptest.workspace = true
+rand = "0.10.3"

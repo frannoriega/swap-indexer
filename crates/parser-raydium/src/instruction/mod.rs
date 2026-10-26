@@ -1,7 +1,7 @@
 pub mod swap_base_in;
 pub mod swap_base_out;
 
-use parser_core::operation::Operation;
+use parser_core::instruction::operation::Operation;
 use solana_sdk::pubkey::Pubkey;
 use types::unpack::little_endian::LittleEndianUnpacker;
 

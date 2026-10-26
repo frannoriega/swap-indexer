@@ -2,9 +2,9 @@ pub mod instruction;
 use std::{collections::HashMap, sync::LazyLock};
 
 use anyhow::anyhow;
-use parser_core::{InstructionParser, operation::Operation};
+use parser_core::{InstructionParser, instruction::{ParsedInstruction, operation::Operation}};
 use solana_sdk::pubkey::Pubkey;
-use types::unpack::little_endian::LittleEndianUnpacker;
+use types::{Instruction, unpack::little_endian::LittleEndianUnpacker};
 
 use crate::instruction::{
     InstructionProcessor,
@@ -38,14 +38,8 @@ impl InstructionProcessor for Processor {
 
 static PROCESSORS: LazyLock<HashMap<u8, Processor>> = LazyLock::new(|| {
     let mut map = HashMap::new();
-    map.insert(
-        9,
-        Processor::SwapBaseIn(SwapBaseInInstructionProcessor),
-    );
-    map.insert(
-        11,
-        Processor::SwapBaseOut(SwapBaseOutInstructionProcessor),
-    );
+    map.insert(9, Processor::SwapBaseIn(SwapBaseInInstructionProcessor));
+    map.insert(11, Processor::SwapBaseOut(SwapBaseOutInstructionProcessor));
     map.insert(
         16,
         Processor::SwapBaseInV2(SwapBaseInV2InstructionProcessor),
@@ -59,12 +53,9 @@ static PROCESSORS: LazyLock<HashMap<u8, Processor>> = LazyLock::new(|| {
 });
 
 impl InstructionParser for RaydiumParser {
-    fn parse(
-        &self,
-        instruction_data: &[u8],
-        accounts: &[Pubkey],
-    ) -> Result<Option<Operation>, anyhow::Error> {
-        let (id, rest) = instruction_data
+    fn parse(&self, instruction: &Instruction) -> Result<Option<ParsedInstruction>, anyhow::Error> {
+        let (id, rest) = instruction
+            .data
             .split_first()
             .ok_or_else(|| anyhow!("invalid instruction"))?;
         let mut unpacker = LittleEndianUnpacker::new(rest);
@@ -72,61 +63,110 @@ impl InstructionParser for RaydiumParser {
             Some(p) => p,
             None => return Ok(None),
         };
-        Ok(Some(processor.process(&mut unpacker, accounts)?))
+        Ok(Some(ParsedInstruction {
+            operation: processor.process(&mut unpacker, &instruction.accounts)?,
+            outer_idx: instruction.outer_idx,
+            stack_depth: instruction.stack_depth,
+        }))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use proptest::prelude::*;
     use std::assert_matches;
-    use types::proptest::addresses;
+    use test_strategy::proptest;
+    use types::proptest::{address, addresses};
 
-    proptest! {
+    #[proptest]
+    fn parses_swap_base_in(
+        #[strategy(address())] program_id: Pubkey,
+        #[strategy(addresses(17..=18))] accounts: Vec<Pubkey>,
+        amount_in: u64,
+        minimum_amount_out: u64,
+    ) {
+        let parser = RaydiumParser;
+        let mut data = Vec::<u8>::new();
+        data.push(9u8);
+        data.extend_from_slice(&amount_in.to_le_bytes());
+        data.extend_from_slice(&minimum_amount_out.to_le_bytes());
+        let instruction = Instruction {
+            program_id,
+            data,
+            accounts,
+            stack_depth: 0,
+            outer_idx: 0,
+        };
 
-        #[test]
-        fn parses_swap_base_in(amount_in: u64, minimum_amount_out: u64, accounts in addresses(17..=18)) {
-            let parser = RaydiumParser;
-            let mut instruction = Vec::<u8>::new();
-            instruction.push(9u8);
-            instruction.extend_from_slice(&amount_in.to_le_bytes());
-            instruction.extend_from_slice(&minimum_amount_out.to_le_bytes());
+        assert_matches!(parser.parse(&instruction), Ok(_));
+    }
 
-            assert_matches!(parser.parse(instruction.as_slice(), accounts.as_slice()), Ok(_));
-        }
+    #[proptest]
+    fn parses_swap_base_out(
+        #[strategy(address())] program_id: Pubkey,
+        #[strategy(addresses(17..=18))] accounts: Vec<Pubkey>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) {
+        let parser = RaydiumParser;
+        let mut data = Vec::<u8>::new();
+        data.push(11u8);
+        data.extend_from_slice(&max_amount_in.to_le_bytes());
+        data.extend_from_slice(&amount_out.to_le_bytes());
+        let instruction = Instruction {
+            program_id,
+            accounts,
+            data,
+            outer_idx: 0,
+            stack_depth: 0,
+        };
 
-        #[test]
-        fn parses_swap_base_out(max_amount_in: u64, amount_out: u64, accounts in addresses(17..=18)) {
-            let parser = RaydiumParser;
-            let mut instruction = Vec::<u8>::new();
-            instruction.push(11u8);
-            instruction.extend_from_slice(&max_amount_in.to_le_bytes());
-            instruction.extend_from_slice(&amount_out.to_le_bytes());
+        assert_matches!(parser.parse(&instruction), Ok(_));
+    }
 
-            assert_matches!(parser.parse(instruction.as_slice(), accounts.as_slice()), Ok(_));
-        }
+    #[proptest]
+    fn parses_swap_base_in_v2(
+        #[strategy(address())] program_id: Pubkey,
+        #[strategy(addresses(8))] accounts: Vec<Pubkey>,
+        amount_in: u64,
+        minimum_amount_out: u64,
+    ) {
+        let parser = RaydiumParser;
+        let mut data = Vec::<u8>::new();
+        data.push(16u8);
+        data.extend_from_slice(&amount_in.to_le_bytes());
+        data.extend_from_slice(&minimum_amount_out.to_le_bytes());
+        let instruction = Instruction {
+            program_id,
+            accounts,
+            data,
+            outer_idx: 0,
+            stack_depth: 0,
+        };
 
-        #[test]
-        fn parses_swap_base_in_v2(amount_in: u64, minimum_amount_out: u64, accounts in addresses(8)) {
-            let parser = RaydiumParser;
-            let mut instruction = Vec::<u8>::new();
-            instruction.push(16u8);
-            instruction.extend_from_slice(&amount_in.to_le_bytes());
-            instruction.extend_from_slice(&minimum_amount_out.to_le_bytes());
+        assert_matches!(parser.parse(&instruction), Ok(_));
+    }
 
-            assert_matches!(parser.parse(instruction.as_slice(), accounts.as_slice()), Ok(_));
-        }
+    #[proptest]
+    fn parses_swap_base_out_v2(
+        #[strategy(address())] program_id: Pubkey,
+        #[strategy(addresses(17..=18))] accounts: Vec<Pubkey>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) {
+        let parser = RaydiumParser;
+        let mut data = Vec::<u8>::new();
+        data.push(17u8);
+        data.extend_from_slice(&max_amount_in.to_le_bytes());
+        data.extend_from_slice(&amount_out.to_le_bytes());
+        let instruction = Instruction {
+            program_id,
+            accounts,
+            data,
+            outer_idx: 0,
+            stack_depth: 0,
+        };
 
-        #[test]
-        fn parses_swap_base_out_v2(max_amount_in: u64, amount_out: u64, accounts in addresses(8)) {
-            let parser = RaydiumParser;
-            let mut instruction = Vec::<u8>::new();
-            instruction.push(17u8);
-            instruction.extend_from_slice(&max_amount_in.to_le_bytes());
-            instruction.extend_from_slice(&amount_out.to_le_bytes());
-
-            assert_matches!(parser.parse(instruction.as_slice(), accounts.as_slice()), Ok(_));
-        }
+        assert_matches!(parser.parse(&instruction), Ok(_));
     }
 }

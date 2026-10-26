@@ -1,12 +1,12 @@
-pub mod operation;
+pub mod instruction;
 
-use solana_sdk::pubkey::Pubkey;
+use types::Instruction;
 
-use crate::operation::Operation;
+use crate::instruction::ParsedInstruction;
 
 /**
  * Instruction parser trait, to be implemented depending on the DEX
  */
 pub trait InstructionParser {
-    fn parse(&self, instruction_data: &[u8], accounts: &[Pubkey]) -> Result<Option<Operation>, anyhow::Error>;
+    fn parse(&self, instruction: &Instruction) -> Result<Option<ParsedInstruction>, anyhow::Error>;
 }

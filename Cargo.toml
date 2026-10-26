@@ -12,7 +12,6 @@ members = [
 anyhow = "1.0.104"
 bs58 = "0.5.1"
 clap = "4.6.7"
-proptest = "1.12.0"
 solana-client = "4.3.0"
 # Using older sdk version to align solana-client and solana-transaction-status
 # to use the same solana-transaction-error dependency
@@ -23,3 +22,5 @@ types = { path = "crates/types" }
 parser-core = { path = "crates/parser-core" }
 parser-raydium = { path = "crates/parser-raydium" }
 rpc-fetcher = { path = "crates/rpc-fetcher" }
+test-strategy = "0.4.5"
+proptest = "1.12.0"

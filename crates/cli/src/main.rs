@@ -1,4 +1,5 @@
-pub mod process;
+mod process;
+mod execution;
 
 use anyhow::anyhow;
 use clap::{Arg, Command, ValueEnum, value_parser};

@@ -1,4 +1,4 @@
-use parser_core::operation::{Operation, swap::SwapOutOperation};
+use parser_core::instruction::operation::{Operation, swap::SwapOutOperation};
 use solana_sdk::pubkey::Pubkey;
 use types::unpack::Unpacker;
 use types::unpack::little_endian::LittleEndianUnpacker;
@@ -78,129 +78,129 @@ impl InstructionProcessor for SwapBaseOutV2InstructionProcessor {
 
         let max_amount_in = unpacker.u64()?;
         let amount_out = unpacker.u64()?;
-        Ok(Operation::SwapOut(
-            SwapOutOperation {
-                source: accounts[SOURCE_IDX],
-                dest: accounts[DEST_IDX],
-                max_amount_in,
-                amount_out,
-            },
-        ))
+        Ok(Operation::SwapOut(SwapOutOperation {
+            source: accounts[SOURCE_IDX],
+            dest: accounts[DEST_IDX],
+            max_amount_in,
+            amount_out,
+        }))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use proptest::prelude::*;
     use std::assert_matches;
+    use test_strategy::proptest;
     use types::proptest::addresses;
 
-    proptest! {
+    #[proptest]
+    fn process_swap_base_out(
+        #[strategy(addresses(17))] accounts: Vec<Pubkey>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) {
+        let mut instruction = Vec::<u8>::new();
+        instruction.extend_from_slice(&max_amount_in.to_le_bytes());
+        instruction.extend_from_slice(&amount_out.to_le_bytes());
+        let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
+        let processor = SwapBaseOutInstructionProcessor;
+        let res = processor.process(&mut unpacker, accounts.as_slice());
 
-        #[test]
-        fn process_swap_base_out(max_amount_in: u64, amount_out: u64, accounts in addresses(17)) {
-            let mut instruction = Vec::<u8>::new();
-            instruction.extend_from_slice(&max_amount_in.to_le_bytes());
-            instruction.extend_from_slice(&amount_out.to_le_bytes());
-            let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-            let processor = SwapBaseOutInstructionProcessor;
-            let res = processor.process(&mut unpacker, accounts.as_slice());
+        assert_matches!(res, Ok(_));
+        let val = res.unwrap();
+        assert_eq!(
+            val,
+            Operation::SwapOut(SwapOutOperation {
+                source: accounts[14],
+                dest: accounts[15],
+                max_amount_in,
+                amount_out
+            })
+        );
+    }
 
-            assert_matches!(
-                res,
-                Ok(_)
-            );
-            let val = res.unwrap();
-            assert_eq!(
-                val,
-                Operation::SwapOut(SwapOutOperation {
-                    source: accounts[14],
-                    dest: accounts[15],
-                    max_amount_in,
-                    amount_out
-                })
-            );
-        }
+    #[proptest]
+    fn process_swap_base_out_with_target_orders(
+        #[strategy(addresses(18))] accounts: Vec<Pubkey>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) {
+        let mut instruction = Vec::<u8>::new();
+        instruction.extend_from_slice(&max_amount_in.to_le_bytes());
+        instruction.extend_from_slice(&amount_out.to_le_bytes());
+        let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
+        let processor = SwapBaseOutInstructionProcessor;
+        let res = processor.process(&mut unpacker, accounts.as_slice());
 
-        #[test]
-        fn process_swap_base_out_with_target_orders(max_amount_in: u64, amount_out: u64, accounts in addresses(18)) {
-            let mut instruction = Vec::<u8>::new();
-            instruction.extend_from_slice(&max_amount_in.to_le_bytes());
-            instruction.extend_from_slice(&amount_out.to_le_bytes());
-            let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-            let processor = SwapBaseOutInstructionProcessor;
-            let res = processor.process(&mut unpacker, accounts.as_slice());
+        assert_matches!(res, Ok(_));
+        let val = res.unwrap();
+        assert_eq!(
+            val,
+            Operation::SwapOut(SwapOutOperation {
+                source: accounts[15],
+                dest: accounts[16],
+                max_amount_in,
+                amount_out
+            })
+        );
+    }
 
-            assert_matches!(
-                res,
-                Ok(_)
-            );
-            let val = res.unwrap();
-            assert_eq!(
-                val,
-                Operation::SwapOut(SwapOutOperation { 
-                    source: accounts[15],
-                    dest: accounts[16],
-                    max_amount_in,
-                    amount_out
-                })
-            );
-        }
+    #[proptest]
+    fn process_swap_base_out_with_wrong_accounts(
+        #[strategy(addresses(0..17))] accounts: Vec<Pubkey>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) {
+        let mut instruction = Vec::<u8>::new();
+        instruction.extend_from_slice(&max_amount_in.to_le_bytes());
+        instruction.extend_from_slice(&amount_out.to_le_bytes());
+        let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
+        let processor = SwapBaseOutInstructionProcessor;
+        let res = processor.process(&mut unpacker, accounts.as_slice());
 
-        #[test]
-        fn process_swap_base_out_with_wrong_accounts(max_amount_in: u64, amount_out: u64, accounts in addresses(0..17)) {
-            let mut instruction = Vec::<u8>::new();
-            instruction.extend_from_slice(&max_amount_in.to_le_bytes());
-            instruction.extend_from_slice(&amount_out.to_le_bytes());
-            let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-            let processor = SwapBaseOutInstructionProcessor;
-            let res = processor.process(&mut unpacker, accounts.as_slice());
+        assert_matches!(res, Err(_));
+    }
 
-            assert_matches!(
-                res,
-                Err(_)
-            );
-        }
+    #[proptest]
+    fn process_swap_base_out_v2(
+        #[strategy(addresses(8))] accounts: Vec<Pubkey>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) {
+        let mut instruction = Vec::<u8>::new();
+        instruction.extend_from_slice(&max_amount_in.to_le_bytes());
+        instruction.extend_from_slice(&amount_out.to_le_bytes());
+        let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
+        let processor = SwapBaseOutV2InstructionProcessor;
+        let res = processor.process(&mut unpacker, accounts.as_slice());
 
-        #[test]
-        fn process_swap_base_out_v2(max_amount_in: u64, amount_out: u64, accounts in addresses(8)) {
-            let mut instruction = Vec::<u8>::new();
-            instruction.extend_from_slice(&max_amount_in.to_le_bytes());
-            instruction.extend_from_slice(&amount_out.to_le_bytes());
-            let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-            let processor = SwapBaseOutV2InstructionProcessor;
-            let res = processor.process(&mut unpacker, accounts.as_slice());
+        assert_matches!(res, Ok(_));
+        let val = res.unwrap();
+        assert_eq!(
+            val,
+            Operation::SwapOut(SwapOutOperation {
+                source: accounts[5],
+                dest: accounts[6],
+                max_amount_in,
+                amount_out
+            })
+        );
+    }
 
-            assert_matches!(
-                res,
-                Ok(_)
-            );
-            let val = res.unwrap();
-            assert_eq!(
-                val,
-                Operation::SwapOut(SwapOutOperation {
-                    source: accounts[5],
-                    dest: accounts[6],
-                    max_amount_in,
-                    amount_out
-                })
-            );
-        }
+    #[proptest]
+    fn process_swap_base_out_v2_with_wrong_accounts(
+        #[strategy(addresses(0..8))] accounts: Vec<Pubkey>,
+        max_amount_in: u64,
+        amount_out: u64,
+    ) {
+        let mut instruction = Vec::<u8>::new();
+        instruction.extend_from_slice(&max_amount_in.to_le_bytes());
+        instruction.extend_from_slice(&amount_out.to_le_bytes());
+        let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
+        let processor = SwapBaseOutV2InstructionProcessor;
+        let res = processor.process(&mut unpacker, accounts.as_slice());
 
-        #[test]
-        fn process_swap_base_out_v2_with_wrong_accounts(max_amount_in: u64, amount_out: u64, accounts in addresses(0..8)) {
-            let mut instruction = Vec::<u8>::new();
-            instruction.extend_from_slice(&max_amount_in.to_le_bytes());
-            instruction.extend_from_slice(&amount_out.to_le_bytes());
-            let mut unpacker = LittleEndianUnpacker::new(instruction.as_slice());
-            let processor = SwapBaseOutV2InstructionProcessor;
-            let res = processor.process(&mut unpacker, accounts.as_slice());
-
-            assert_matches!(
-                res,
-                Err(_)
-            );
-        }
+        assert_matches!(res, Err(_));
     }
 }

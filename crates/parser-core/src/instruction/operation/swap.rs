@@ -1,6 +1,6 @@
 use solana_sdk::pubkey::Pubkey;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct SwapInOperation {
     pub source: Pubkey,
     pub dest: Pubkey,
@@ -8,7 +8,7 @@ pub struct SwapInOperation {
     pub min_amount_out: u64,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct SwapOutOperation {
     pub source: Pubkey,
     pub dest: Pubkey,

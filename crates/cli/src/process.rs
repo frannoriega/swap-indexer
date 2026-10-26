@@ -38,7 +38,7 @@ pub fn process(tx: RawTx) -> Result<(), anyhow::Error> {
     let deltas = compute_deltas(&tx);
     for instr in &tx.instructions {
         let parsed_instr = match PROGRAMS.get(&instr.program_id) {
-            Some(Parser::Raydium(parser)) => parser.parse(&instr.data, &instr.accounts)?,
+            Some(Parser::Raydium(parser)) => parser.parse(&instr)?,
             None => continue,
         };
         let operation = match parsed_instr {
