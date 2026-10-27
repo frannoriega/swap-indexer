@@ -7,12 +7,14 @@ use crate::instruction::operation::{
     swap::{SwapInOperation, SwapOutOperation},
     transfer::TransferOperation,
 };
+use crate::instruction::operation::Operation::Unknown;
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Operation {
     SwapIn(SwapInOperation),
     SwapOut(SwapOutOperation),
     Transfer(TransferOperation),
+    Unknown,
 }
 
 impl Operation {
@@ -21,6 +23,7 @@ impl Operation {
             Operation::SwapIn(s) => vec![s.source],
             Operation::SwapOut(s) => vec![s.source],
             Operation::Transfer(s) => vec![s.source],
+            Operation::Unknown => vec![],
         }
     }
 
@@ -29,6 +32,7 @@ impl Operation {
             Operation::SwapIn(s) => vec![s.dest],
             Operation::SwapOut(s) => vec![s.dest],
             Operation::Transfer(s) => vec![s.dest],
+            Operation::Unknown => vec![],
         }
     }
 }
