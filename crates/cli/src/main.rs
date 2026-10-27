@@ -1,13 +1,9 @@
-mod execution;
-mod process;
-
 use anyhow::anyhow;
 use clap::{Arg, Command, ValueEnum, value_parser};
+use indexer::process;
 use rpc_fetcher::RpcFetcher;
 use solana_sdk::signature::Signature;
 use types::Fetcher;
-
-use crate::process::process;
 
 #[derive(Copy, Clone, ValueEnum)]
 enum FetcherOpt {

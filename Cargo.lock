@@ -816,6 +816,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "indexer",
  "parser-core",
  "parser-raydium",
  "petgraph",
@@ -1940,6 +1941,25 @@ checksum = "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
+]
+
+[[package]]
+name = "indexer"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "parser-core",
+ "parser-raydium",
+ "petgraph",
+ "proptest",
+ "rand 0.10.3",
+ "rpc-fetcher",
+ "solana-sdk",
+ "test-strategy",
+ "tokio",
+ "types",
+ "utils",
 ]
 
 [[package]]

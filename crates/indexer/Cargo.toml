@@ -1,0 +1,24 @@
+[package]
+name = "indexer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+clap = { workspace = true, features = ["derive"] }
+parser-core.workspace = true
+parser-raydium.workspace = true
+petgraph = "0.8.3"
+rpc-fetcher.workspace = true
+solana-sdk.workspace = true
+tokio = { version = "1", features = ["full"] }
+types.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+rand = "0.10.3"
+test-strategy = "0.4.5"
+utils.workspace = true
+
+[lints]
+workspace = true

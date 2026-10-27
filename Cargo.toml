@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "crates/cli",
+    "crates/indexer",
     "crates/parser-core",
     "crates/parser-raydium",
     "crates/rpc-fetcher",
@@ -13,6 +14,7 @@ members = [
 anyhow = "1.0.104"
 bs58 = "0.5.1"
 clap = "4.6.7"
+indexer = { path = "crates/indexer" }
 parser-core = { path = "crates/parser-core" }
 parser-raydium = { path = "crates/parser-raydium" }
 proptest = "1.12.0"

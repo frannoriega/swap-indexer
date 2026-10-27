@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow.workspace = true
 clap = { workspace = true, features = ["derive"] }
+indexer.workspace = true
 parser-core.workspace = true
 parser-raydium.workspace = true
 petgraph = "0.8.3"
