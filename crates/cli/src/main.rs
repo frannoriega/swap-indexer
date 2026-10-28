@@ -1,6 +1,8 @@
 use anyhow::anyhow;
 use clap::{Arg, Command, ValueEnum, value_parser};
 use indexer::IndexerBuilder;
+use indexer::interpreter::Interpreter;
+use indexer::interpreter::trade::TradeInterpreter;
 use parser_core::system::SplTokenParser;
 use parser_raydium::RaydiumParser;
 use rpc_fetcher::RpcFetcher;
@@ -63,6 +65,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .with_parser(WSOL_TOKEN, SplTokenParser)
         .with_parser(SPL_TOKEN_2022, SplTokenParser)
         .build();
-    let _processed = indexer.process(&tx);
+    let processed = indexer.process(&tx)?;
+    let _trades = TradeInterpreter::interpret(&processed.flow_graph);
     Ok(())
 }
