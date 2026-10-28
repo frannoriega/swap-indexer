@@ -1,10 +1,12 @@
 pub mod transfer;
 use std::{collections::HashMap, sync::LazyLock};
 
+use anyhow::anyhow;
 use types::{Instruction, unpack::little_endian::LittleEndianUnpacker};
 
 use crate::{
-    InstructionParser, LEOperationParser, instruction::ParsedInstruction,
+    LEOperationParser,
+    instruction::{InstructionParser, operation::Operation},
     system::transfer::TransferOperationParser,
 };
 
@@ -33,22 +35,17 @@ static PARSERS: LazyLock<HashMap<u8, Parser>> = LazyLock::new(|| {
 
 pub struct SplTokenParser;
 
-impl InstructionParser for SplTokenParser {
-    fn parse(&self, instruction: &Instruction) -> Result<Option<ParsedInstruction>, anyhow::Error> {
-        let (id, rest) = match instruction.data.split_first() {
-            Some(a) => a,
-            None => return Ok(Some(ParsedInstruction::unknown(instruction))),
-        };
+impl InstructionParser<Operation> for SplTokenParser {
+    fn parse(&self, instruction: &Instruction) -> Result<Option<Operation>, anyhow::Error> {
+        let (id, rest) = instruction
+            .data
+            .split_first()
+            .ok_or_else(|| anyhow!("invalid instruction"))?;
         let mut unpacker = LittleEndianUnpacker::new(rest);
         let parser = match PARSERS.get(id) {
             Some(p) => p,
             None => return Ok(None),
         };
-        Ok(Some(ParsedInstruction {
-            program_id: instruction.program_id,
-            operation: parser.process(&mut unpacker, &instruction.accounts)?,
-            outer_idx: instruction.outer_idx,
-            stack_depth: instruction.stack_depth,
-        }))
+        Ok(Some(parser.process(&mut unpacker, &instruction.accounts)?))
     }
 }

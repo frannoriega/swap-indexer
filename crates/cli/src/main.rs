@@ -1,8 +1,11 @@
 use anyhow::anyhow;
 use clap::{Arg, Command, ValueEnum, value_parser};
-use indexer::process;
+use indexer::IndexerBuilder;
+use parser_core::system::SplTokenParser;
+use parser_raydium::RaydiumParser;
 use rpc_fetcher::RpcFetcher;
-use solana_sdk::signature::Signature;
+use solana_sdk::pubkey;
+use solana_sdk::{pubkey::Pubkey, signature::Signature};
 use types::Fetcher;
 
 #[derive(Copy, Clone, ValueEnum)]
@@ -10,6 +13,10 @@ enum FetcherOpt {
     #[value(alias = "rpc")]
     Rpc,
 }
+
+const WSOL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const SPL_TOKEN_2022: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+const RAYDIUM_AMM_V4: Pubkey = pubkey!("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -51,6 +58,11 @@ async fn main() -> Result<(), anyhow::Error> {
         FetcherOpt::Rpc => RpcFetcher::new(url.to_owned()),
     };
     let tx = fetcher.get_transaction(signature).await?;
-    let _result = process(tx)?;
+    let indexer = IndexerBuilder::new()
+        .with_parser(RAYDIUM_AMM_V4, RaydiumParser)
+        .with_parser(WSOL_TOKEN, SplTokenParser)
+        .with_parser(SPL_TOKEN_2022, SplTokenParser)
+        .build();
+    let _processed = indexer.process(&tx);
     Ok(())
 }

@@ -3,21 +3,22 @@ pub mod transfer;
 
 use solana_sdk::pubkey::Pubkey;
 
-use crate::instruction::operation::{
+use crate::instruction::{Resource, operation::{
     swap::{SwapInOperation, SwapOutOperation},
     transfer::TransferOperation,
-};
+}};
 
-#[derive(PartialEq, Debug, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub enum Operation {
     SwapIn(SwapInOperation),
     SwapOut(SwapOutOperation),
     Transfer(TransferOperation),
+    #[default]
     Unknown,
 }
 
-impl Operation {
-    pub fn sources(&self) -> Vec<Pubkey> {
+impl Resource for Operation {
+    fn consumes(&self) -> Vec<Pubkey> {
         match self {
             Operation::SwapIn(s) => vec![s.source],
             Operation::SwapOut(s) => vec![s.source],
@@ -26,7 +27,7 @@ impl Operation {
         }
     }
 
-    pub fn destinations(&self) -> Vec<Pubkey> {
+    fn produces(&self) -> Vec<Pubkey> {
         match self {
             Operation::SwapIn(s) => vec![s.dest],
             Operation::SwapOut(s) => vec![s.dest],

@@ -6,23 +6,20 @@ use crate::instruction::operation::Operation;
 pub mod operation;
 
 #[derive(Debug, Clone, Copy)]
-pub struct ParsedInstruction {
+pub struct Parsed<T> {
     pub program_id: Pubkey,
-    pub operation: Operation,
+    pub operation: T,
     pub outer_idx: u8,
     pub stack_depth: u32,
 }
 
-impl ParsedInstruction {
-    pub fn unknown(instruction: &Instruction) -> ParsedInstruction {
-        ParsedInstruction {
-            program_id: instruction.program_id,
-            operation: Operation::Unknown,
-            outer_idx: instruction.outer_idx,
-            stack_depth: instruction.stack_depth,
-        }
-    }
+pub trait Resource {
+    fn consumes(&self) -> Vec<Pubkey>;
+
+    fn produces(&self) -> Vec<Pubkey>;
 }
+
+pub type ParsedInstruction = Parsed<Operation>;
 
 pub trait Linkable {
     // Accounts this item reads value/state from
@@ -35,16 +32,21 @@ pub trait Linkable {
     fn group(&self) -> u8;
 }
 
-impl Linkable for ParsedInstruction {
+impl<T: Resource> Linkable for Parsed<T> {
     fn consumes(&self) -> Vec<Pubkey> {
-        self.operation.sources()
+        self.operation.consumes()
     }
-
     fn produces(&self) -> Vec<Pubkey> {
-        self.operation.destinations()
+        self.operation.produces()
     }
-
     fn group(&self) -> u8 {
         self.outer_idx
     }
+}
+
+/**
+ * Instruction parser trait, to be implemented depending on the DEX
+ */
+pub trait InstructionParser<T> {
+    fn parse(&self, instruction: &Instruction) -> Result<Option<T>, anyhow::Error>;
 }

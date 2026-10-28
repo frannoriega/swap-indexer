@@ -3,63 +3,78 @@ pub mod deltas;
 pub mod execution;
 pub mod interpreter;
 
-use std::{
-    collections::HashMap,
-    sync::LazyLock,
-};
+use std::collections::HashMap;
 
 use anyhow::anyhow;
-use parser_core::{InstructionParser, instruction::ParsedInstruction, system::SplTokenParser};
-use parser_raydium::RaydiumParser;
-use solana_sdk::pubkey;
+use parser_core::instruction::{InstructionParser, Parsed, Resource};
 use solana_sdk::pubkey::Pubkey;
 use types::RawTx;
 
-use crate::deltas::compute_deltas;
+use crate::call_tree::CallTree;
+use crate::execution::ExecutionGraph;
 
-enum Parser {
-    Spl(SplTokenParser),
-    Raydium(RaydiumParser),
+pub struct ProcessedTx<T> {
+    pub call_tree: CallTree<T>,
+    pub flow_graph: ExecutionGraph<Parsed<T>>,
 }
 
-impl InstructionParser for Parser {
-    fn parse(
-        &self,
-        instruction: &types::Instruction,
-    ) -> Result<Option<ParsedInstruction>, anyhow::Error> {
-        match self {
-            Parser::Spl(p) => p.parse(instruction),
-            Parser::Raydium(p) => p.parse(instruction),
+pub struct Indexer<T> {
+    parsers: HashMap<Pubkey, Box<dyn InstructionParser<T> + Send + Sync>>,
+}
+
+impl<T: Resource + Default + Copy> Indexer<T> {
+    pub fn process(&self, tx: &RawTx) -> Result<ProcessedTx<T>, anyhow::Error> {
+        if let Some(err) = &tx.status {
+            return Err(anyhow!("Transaction failed: {:}", err));
+        }
+
+        let parsed: Vec<Parsed<T>> = tx
+            .instructions
+            .iter()
+            .map(|instr| -> Result<Parsed<T>, anyhow::Error> {
+                let operation = match self.parsers.get(&instr.program_id) {
+                    Some(parser) => parser.parse(instr)?.unwrap_or_default(),
+                    None => T::default(),
+                };
+                Ok(Parsed {
+                    operation,
+                    program_id: instr.program_id,
+                    outer_idx: instr.outer_idx,
+                    stack_depth: instr.stack_depth,
+                })
+            })
+            .collect::<Result<_, _>>()?;
+
+        Ok(ProcessedTx {
+            call_tree: CallTree::new(parsed.clone()),
+            flow_graph: ExecutionGraph::new(parsed),
+        })
+    }
+}
+
+pub struct IndexerBuilder<T> {
+    parsers: HashMap<Pubkey, Box<dyn InstructionParser<T> + Send + Sync>>,
+}
+
+impl<T> IndexerBuilder<T> {
+    pub fn new() -> Self {
+        IndexerBuilder {
+            parsers: HashMap::new(),
         }
     }
-}
 
-const SPL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-const SPL_TOKEN_2022: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
-const RAYDIUM_AMM_V4: Pubkey = pubkey!("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
-
-static PROGRAMS: LazyLock<HashMap<Pubkey, Parser>> = LazyLock::new(|| {
-    let mut map = HashMap::new();
-    map.insert(RAYDIUM_AMM_V4, Parser::Raydium(RaydiumParser));
-    map.insert(SPL_TOKEN, Parser::Spl(SplTokenParser));
-    map.insert(SPL_TOKEN_2022, Parser::Spl(SplTokenParser));
-    map
-});
-
-pub fn process(tx: RawTx) -> Result<(), anyhow::Error> {
-    if let Some(err) = tx.status {
-        return Err(anyhow!("Transaction failed: {:}", err));
+    pub fn with_parser(
+        mut self,
+        program_id: Pubkey,
+        parser: impl InstructionParser<T> + Send + Sync + 'static,
+    ) -> Self {
+        self.parsers.insert(program_id, Box::new(parser));
+        self
     }
-    let _deltas = compute_deltas(&tx);
-    for instr in &tx.instructions {
-        let parsed_instr = match PROGRAMS.get(&instr.program_id) {
-            Some(parser) => parser.parse(instr)?,
-            None => continue,
-        };
-        let _operation = match parsed_instr {
-            Some(op) => op,
-            None => continue,
-        };
+
+    pub fn build(self) -> Indexer<T> {
+        Indexer {
+            parsers: self.parsers,
+        }
     }
-    Ok(())
 }

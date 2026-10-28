@@ -2,19 +2,9 @@ pub mod instruction;
 pub mod system;
 
 use solana_sdk::pubkey::Pubkey;
-use types::{
-    Instruction,
-    unpack::{big_endian::BigEndianUnpacker, little_endian::LittleEndianUnpacker},
-};
+use types::unpack::{big_endian::BigEndianUnpacker, little_endian::LittleEndianUnpacker};
 
-use crate::instruction::{ParsedInstruction, operation::Operation};
-
-/**
- * Instruction parser trait, to be implemented depending on the DEX
- */
-pub trait InstructionParser {
-    fn parse(&self, instruction: &Instruction) -> Result<Option<ParsedInstruction>, anyhow::Error>;
-}
+use crate::instruction::operation::Operation;
 
 pub trait LEOperationParser {
     fn process<'a>(
