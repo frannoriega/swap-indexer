@@ -13,7 +13,7 @@ pub struct ExecutionNode<T> {
     pub weight: T,
 }
 
-type Execution<T> = DiGraph<ExecutionNode<T>, Pubkey>;
+pub type Execution<T> = DiGraph<ExecutionNode<T>, Pubkey>;
 
 #[derive(Debug)]
 pub struct ExecutionGraph<T> {

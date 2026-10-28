@@ -19,7 +19,10 @@ impl CallTree {
 
         for instr in instructions {
             let node = tree.add_node(instr);
-            while stack.last().is_some_and(|(depth, _)| *depth >= instr.stack_depth) {
+            while stack
+                .last()
+                .is_some_and(|(depth, _)| *depth >= instr.stack_depth)
+            {
                 stack.pop();
             }
             match stack.last() {
