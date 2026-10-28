@@ -1,4 +1,5 @@
 pub mod execution;
+pub mod call_tree;
 
 use std::{
     collections::{HashMap, HashSet},

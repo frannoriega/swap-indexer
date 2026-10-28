@@ -1,5 +1,4 @@
 pub mod transfer;
-use anyhow::anyhow;
 use std::{collections::HashMap, sync::LazyLock};
 
 use types::{Instruction, unpack::little_endian::LittleEndianUnpacker};

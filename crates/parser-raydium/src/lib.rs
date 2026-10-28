@@ -1,7 +1,6 @@
 pub mod instruction;
 use std::{collections::HashMap, sync::LazyLock};
 
-use anyhow::anyhow;
 use parser_core::{
     InstructionParser, LEOperationParser,
     instruction::{ParsedInstruction, operation::Operation},

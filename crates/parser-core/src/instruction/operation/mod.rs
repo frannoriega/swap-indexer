@@ -7,7 +7,6 @@ use crate::instruction::operation::{
     swap::{SwapInOperation, SwapOutOperation},
     transfer::TransferOperation,
 };
-use crate::instruction::operation::Operation::Unknown;
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Operation {

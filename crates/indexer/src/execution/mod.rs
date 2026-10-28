@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use parser_core::instruction::operation::Operation;
+use parser_core::instruction::Linkable;
 use petgraph::{
     graph::{DiGraph, NodeIndex},
     unionfind::UnionFind,
@@ -8,31 +8,19 @@ use petgraph::{
 use solana_sdk::pubkey::Pubkey;
 
 #[derive(Clone, Copy, Debug)]
-pub struct ExecutionStep {
-    pub program_id: Pubkey,
-    pub operation: Operation,
-    pub outer_idx: u8,
-    pub stack_depth: u32,
+pub struct ExecutionNode<T> {
+    pub order: usize,
+    pub weight: T,
 }
 
-#[derive(Clone, Copy, Debug)]
-struct ExecutionNode {
-    order: usize,
-    program_id: Pubkey,
-    operation: Operation,
-    // Index of the top-level instruction
-    outer_idx: u8,
-    stack_depth: u32,
-}
-
-type Execution = petgraph::graph::DiGraph<ExecutionNode, Pubkey>;
+type Execution<T> = DiGraph<ExecutionNode<T>, Pubkey>;
 
 #[derive(Debug)]
-pub struct ExecutionGraph {
-    executions: Vec<Execution>,
+pub struct ExecutionGraph<T> {
+    executions: Vec<Execution<T>>,
 }
 
-impl ExecutionGraph {
+impl<T: Linkable + Copy> ExecutionGraph<T> {
     /**
      * Builds an [ExecutionGraph] from a list of [ExecutionStep]s.
      * This assumes the [ExecutionStep]s are already ordered.
@@ -42,41 +30,38 @@ impl ExecutionGraph {
      * we cannot distinguish them (easily), and they will be grouped
      * into the same [Execution]
      */
-    pub fn new(executions: Vec<ExecutionStep>) -> ExecutionGraph {
+    pub fn new(items: Vec<T>) -> ExecutionGraph<T> {
         // One single graph that will have all the executions.
         // This is a forest DAG: multiple executions will be independent,
         // and will belong to the same graph.
         // At the end of this algorithm, this graph will be split into multiple ones,
         // one per execution.
-        let mut graph: Execution = DiGraph::new();
+        let mut graph: Execution<T> = DiGraph::new();
         // We will use this for grouping different executions later.
         // We'll take advantage of the fact that we don't remove anything
         // for the graph, ever; so indices in the graph are essentially the insertion
         // order
-        let mut execution_groups: UnionFind<usize> = UnionFind::new(executions.len());
+        let mut execution_groups: UnionFind<usize> = UnionFind::new(items.len());
 
         // The operation nodes associated to a given (unclaimed) destination account.
         // Unclaim = We've seen no operation that had this account as part of it sources account
         let mut unclaimed_dests: HashMap<Pubkey, Vec<NodeIndex>> = HashMap::new();
-        let mut instr_grouping: HashMap<u8, NodeIndex> = HashMap::new();
+        let mut group_roots: HashMap<u8, NodeIndex> = HashMap::new();
 
-        for (order, exec) in executions.iter().enumerate() {
-            let sources = exec.operation.sources();
-            let dests = exec.operation.destinations();
+        for (order, item) in items.iter().enumerate() {
+            let sources = item.consumes();
+            let dests = item.produces();
             let node = graph.add_node(ExecutionNode {
                 order,
-                program_id: exec.program_id,
-                operation: exec.operation,
-                outer_idx: exec.outer_idx,
-                stack_depth: exec.stack_depth,
+                weight: *item,
             });
 
-            match instr_grouping.get(&exec.outer_idx) {
+            match group_roots.get(&item.group()) {
                 Some(&root) => {
                     execution_groups.union(root.index(), node.index());
                 },
                 None => {
-                    instr_grouping.insert(exec.outer_idx, node);
+                    group_roots.insert(item.group(), node);
                 },
             };
 
@@ -117,7 +102,7 @@ impl ExecutionGraph {
         ExecutionGraph { executions }
     }
 
-    pub fn executions(&self) -> &[Execution] {
+    pub fn executions(&self) -> &[Execution<T>] {
         &self.executions
     }
 }
@@ -127,7 +112,13 @@ mod tests {
     use std::ops::RangeInclusive;
 
     use super::*;
-    use parser_core::instruction::operation::swap::{SwapInOperation, SwapOutOperation};
+    use parser_core::instruction::{
+        ParsedInstruction,
+        operation::{
+            Operation,
+            swap::{SwapInOperation, SwapOutOperation},
+        },
+    };
     use proptest::{
         arbitrary::any,
         prop_oneof,
@@ -184,7 +175,7 @@ mod tests {
         }
     }
 
-    fn chain(len: RangeInclusive<usize>) -> impl Strategy<Value = Vec<ExecutionStep>> {
+    fn chain(len: RangeInclusive<usize>) -> impl Strategy<Value = Vec<ParsedInstruction>> {
         len.prop_flat_map(|k| {
             (
                 addresses(k + 1).prop_filter("accounts must be different", |accounts| {
@@ -196,7 +187,7 @@ mod tests {
         .prop_map(|(path, hops)| {
             path.windows(2)
                 .zip(hops)
-                .map(|(pair, (program_id, raw))| ExecutionStep {
+                .map(|(pair, (program_id, raw))| ParsedInstruction {
                     program_id,
                     operation: finish(raw, pair[0], pair[1]),
                     outer_idx: 0,
@@ -210,7 +201,7 @@ mod tests {
     }
 
     // Using with branches <= 2 won't return a diamond
-    fn diamond(branches: RangeInclusive<usize>) -> impl Strategy<Value = Vec<ExecutionStep>> {
+    fn diamond(branches: RangeInclusive<usize>) -> impl Strategy<Value = Vec<ParsedInstruction>> {
         branches
             .prop_flat_map(|n| {
                 (
@@ -226,9 +217,9 @@ mod tests {
                 let intermediate = accounts[1];
                 let sink = accounts[2];
 
-                let mut steps: Vec<ExecutionStep> = fan_out_hops
+                let mut steps: Vec<ParsedInstruction> = fan_out_hops
                     .into_iter()
-                    .map(|(program_id, raw)| ExecutionStep {
+                    .map(|(program_id, raw)| ParsedInstruction {
                         program_id,
                         operation: finish(raw, root, intermediate),
                         outer_idx: 0,
@@ -237,7 +228,7 @@ mod tests {
                     .collect();
 
                 let (closing_program_id, closing_raw) = closing_hop;
-                steps.push(ExecutionStep {
+                steps.push(ParsedInstruction {
                     program_id: closing_program_id,
                     operation: finish(closing_raw, intermediate, sink),
                     outer_idx: 0,
@@ -251,7 +242,10 @@ mod tests {
             })
     }
 
-    fn interleave(mut groups: Vec<Vec<ExecutionStep>>, tags: Vec<usize>) -> Vec<ExecutionStep> {
+    fn interleave(
+        mut groups: Vec<Vec<ParsedInstruction>>,
+        tags: Vec<usize>,
+    ) -> Vec<ParsedInstruction> {
         let n = groups.len();
         let mut result = Vec::with_capacity(tags.len());
         for tag in tags {
@@ -266,13 +260,13 @@ mod tests {
         result
     }
 
-    fn group() -> impl Strategy<Value = Vec<ExecutionStep>> {
+    fn group() -> impl Strategy<Value = Vec<ParsedInstruction>> {
         prop_oneof![chain(0..=10), diamond(2..=5)]
     }
 
     #[derive(Debug)]
     struct ExecutionsCase {
-        steps: Vec<ExecutionStep>,
+        steps: Vec<ParsedInstruction>,
         group_count: usize,
     }
 
@@ -300,7 +294,7 @@ mod tests {
 
     #[test]
     fn empty_executions() {
-        let executions = ExecutionGraph::new(vec![]).executions;
+        let executions = ExecutionGraph::<ParsedInstruction>::new(vec![]).executions;
         assert!(executions.is_empty());
     }
 
@@ -328,7 +322,7 @@ mod tests {
     }
 
     #[proptest]
-    fn chain_is_one_connected_path(#[strategy(chain(1..=8))] steps: Vec<ExecutionStep>) {
+    fn chain_is_one_connected_path(#[strategy(chain(1..=8))] steps: Vec<ParsedInstruction>) {
         let len = steps.len();
         let graph = ExecutionGraph::new(steps);
         let executions = graph.executions();
@@ -347,9 +341,9 @@ mod tests {
     }
 
     #[proptest]
-    fn diamond_fans_in_correctly(#[strategy(diamond(2..=5))] steps: Vec<ExecutionStep>) {
+    fn diamond_fans_in_correctly(#[strategy(diamond(2..=5))] steps: Vec<ParsedInstruction>) {
         let n = steps.len() - 1;
-        let graph = ExecutionGraph::new(steps);
+        let graph = ExecutionGraph::<ParsedInstruction>::new(steps);
         let executions = graph.executions();
         prop_assert_eq!(executions.len(), 1);
         let execution = &executions[0];
