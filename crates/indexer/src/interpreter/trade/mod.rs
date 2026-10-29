@@ -1,3 +1,5 @@
+pub mod event;
+
 use parser_core::instruction::{ParsedInstruction, operation::Operation};
 use petgraph::{Direction, graph::NodeIndex};
 
