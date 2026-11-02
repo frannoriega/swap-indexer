@@ -1,0 +1,16 @@
+# Relax lints inside #[cfg(test)] code, so tests can stay terse without
+# tripping lints meant to catch production bugs.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-indexing-slicing-in-tests = true
+
+# Flag functions/types/enums that grow past sane complexity so refactors
+# happen before the code rots, not after.
+too-many-arguments-threshold = 6
+type-complexity-threshold = 250
+cognitive-complexity-threshold = 30
+enum-variant-size-threshold = 200
+
+# Treat `unwrap`/`expect` calls left as TODOs the same as other lint debt.
+allow-dbg-in-tests = true

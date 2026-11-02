@@ -11,3 +11,8 @@ newline_style = "Unix"
 match_block_trailing_comma = true
 use_field_init_shorthand = true
 use_try_shorthand = true
+
+# Doc/comment wrapping to max_width (100). Unstable - requires nightly rustfmt
+# (`cargo +nightly fmt`); stable rustfmt just warns and ignores these two.
+wrap_comments = true
+comment_width = 100

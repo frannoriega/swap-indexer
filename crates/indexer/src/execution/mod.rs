@@ -22,8 +22,8 @@ pub struct ExecutionGraph<T> {
 
 impl<T: Linkable + Copy> ExecutionGraph<T> {
     /**
-     * Builds an [ExecutionGraph] from a list of [ExecutionStep]s.
-     * This assumes the [ExecutionStep]s are already ordered.
+     * Builds an [ExecutionGraph] from a list of [Linkable]s.
+     * This assumes the [Linkable]s are already ordered.
      *
      * NOTE: This algorithm is heuristic. There could be a case where
      * two unrelated executions use the same source accounts, in which case
@@ -39,12 +39,12 @@ impl<T: Linkable + Copy> ExecutionGraph<T> {
         let mut graph: Execution<T> = DiGraph::new();
         // We will use this for grouping different executions later.
         // We'll take advantage of the fact that we don't remove anything
-        // for the graph, ever; so indices in the graph are essentially the insertion
+        // from the graph, ever; so indices in the graph are essentially the insertion
         // order
         let mut execution_groups: UnionFind<usize> = UnionFind::new(items.len());
 
         // The operation nodes associated to a given (unclaimed) destination account.
-        // Unclaim = We've seen no operation that had this account as part of it sources account
+        // Unclaim = We've seen no operation that had this account as part of its sources account
         let mut unclaimed_dests: HashMap<Pubkey, Vec<NodeIndex>> = HashMap::new();
         let mut group_roots: HashMap<u8, NodeIndex> = HashMap::new();
 
@@ -134,8 +134,10 @@ mod tests {
     #[derive(Debug, Clone, Copy)]
     enum RawHop {
         SwapIn { amount_in: u64, min_amount_out: u64 },
-        SwapOut { max_amount_in: u64, amount_out: u64 }, // Add variants here if you need to test other operations
-                                                         // This will work as long as they have one source, one destination
+        SwapOut { max_amount_in: u64, amount_out: u64 }, /* Add variants here if you need to
+                                                          * test other operations
+                                                          * This will work as long as they have
+                                                          * one source, one destination */
     }
 
     fn raw_hop() -> impl Strategy<Value = RawHop> {

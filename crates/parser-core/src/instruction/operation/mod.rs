@@ -3,10 +3,13 @@ pub mod transfer;
 
 use solana_sdk::pubkey::Pubkey;
 
-use crate::instruction::{Resource, operation::{
-    swap::{SwapInOperation, SwapOutOperation},
-    transfer::TransferOperation,
-}};
+use crate::instruction::{
+    Resource,
+    operation::{
+        swap::{SwapInOperation, SwapOutOperation},
+        transfer::TransferOperation,
+    },
+};
 
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub enum Operation {
