@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use solana_sdk::pubkey::Pubkey;
 
 use crate::accounts::TokenResolver;
+use crate::interpreter::Event;
 use crate::interpreter::trade::event::{Legs, TokenAmount, TradeEvent};
 
 /// A [TokenAmount] once resolution has been attempted.
@@ -24,6 +25,42 @@ pub struct ResolvedTradeEvent {
     pub program_id: Pubkey,
     pub input: ResolvedLegs,
     pub output: ResolvedLegs,
+}
+
+impl Event for ResolvedTradeEvent {
+    fn program_id(&self) -> Pubkey {
+        self.program_id
+    }
+
+    fn describe(&self) -> String {
+        let format_amount = |amount: u64, decimals: Option<u8>| match decimals {
+            Some(0) | None => format!("{amount}"),
+            Some(d) => {
+                // Treat all of these as integers instead of floats,
+                // so we have exact precision
+                let pow = 10u64.pow(d as u32);
+                let whole = amount / pow;
+                let frac = amount % pow;
+                let d = d as usize;
+                format!("{whole}.{frac:0d$}")
+            },
+        };
+        let side = |legs: &ResolvedLegs| {
+            legs.iter()
+                .map(|(account, t)| match &t.symbol {
+                    Some(symbol) => format!(
+                        "{} {} of {}",
+                        format_amount(t.amount, t.decimals),
+                        symbol,
+                        account
+                    ),
+                    None => format!("{} of {}", format_amount(t.amount, t.decimals), account),
+                })
+                .collect::<Vec<_>>()
+                .join(" + ")
+        };
+        format!("Swap: {} -> {}", side(&self.input), side(&self.output))
+    }
 }
 
 /// Explicit, optional enrichment pass over an already-built [TradeEvent] -

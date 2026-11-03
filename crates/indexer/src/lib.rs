@@ -53,6 +53,7 @@ impl<T: Resource + Default + Copy> Indexer<T> {
     }
 }
 
+#[derive(Default)]
 pub struct IndexerBuilder<T> {
     parsers: HashMap<Pubkey, Box<dyn InstructionParser<T> + Send + Sync>>,
 }
