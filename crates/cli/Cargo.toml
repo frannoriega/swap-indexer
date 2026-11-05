@@ -8,12 +8,13 @@ anyhow.workspace = true
 clap = { workspace = true, features = ["derive"] }
 indexer.workspace = true
 parser-core.workspace = true
-parser-raydium.workspace = true
+trade-parser-raydium.workspace = true
+trade-parser-spl-token.workspace = true
 rpc-fetcher.workspace = true
 solana-sdk.workspace = true
 tokio = { version = "1", features = ["full"] }
 types.workspace = true
-trade.workspace = true
+trade-interpreter.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

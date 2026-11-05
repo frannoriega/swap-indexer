@@ -807,14 +807,15 @@ dependencies = [
  "clap",
  "indexer",
  "parser-core",
- "parser-raydium",
  "proptest",
  "rand 0.10.3",
  "rpc-fetcher",
  "solana-sdk",
  "test-strategy",
  "tokio",
- "trade",
+ "trade-interpreter",
+ "trade-parser-raydium",
+ "trade-parser-spl-token",
  "types",
  "utils",
 ]
@@ -1943,6 +1944,7 @@ dependencies = [
  "rand 0.10.3",
  "solana-sdk",
  "test-strategy",
+ "trade-model",
  "types",
  "utils",
 ]
@@ -2392,19 +2394,6 @@ dependencies = [
  "anyhow",
  "solana-sdk",
  "types",
-]
-
-[[package]]
-name = "parser-raydium"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "parser-core",
- "proptest",
- "solana-sdk",
- "test-strategy",
- "types",
- "utils",
 ]
 
 [[package]]
@@ -5999,7 +5988,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "trade"
+name = "trade-interpreter"
 version = "0.1.0"
 dependencies = [
  "indexer",
@@ -6009,7 +5998,41 @@ dependencies = [
  "rand 0.10.3",
  "solana-sdk",
  "test-strategy",
+ "trade-model",
  "utils",
+]
+
+[[package]]
+name = "trade-model"
+version = "0.1.0"
+dependencies = [
+ "parser-core",
+ "solana-sdk",
+]
+
+[[package]]
+name = "trade-parser-raydium"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "parser-core",
+ "proptest",
+ "solana-sdk",
+ "test-strategy",
+ "trade-model",
+ "types",
+ "utils",
+]
+
+[[package]]
+name = "trade-parser-spl-token"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "parser-core",
+ "solana-sdk",
+ "trade-model",
+ "types",
 ]
 
 [[package]]

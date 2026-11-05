@@ -1,0 +1,12 @@
+[package]
+name = "trade-model"
+version = "0.1.0"
+edition = "2024"
+description = "Payload types for the trade domain, shared by every parser that feeds it"
+
+[dependencies]
+parser-core.workspace = true
+solana-sdk.workspace = true
+
+[lints]
+workspace = true

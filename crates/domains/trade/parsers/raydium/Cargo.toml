@@ -1,0 +1,20 @@
+[package]
+name = "trade-parser-raydium"
+version = "0.1.0"
+edition = "2024"
+description = "An instruction parser implementation library for Raydium AMM instructions"
+
+[dependencies]
+anyhow.workspace = true
+parser-core.workspace = true
+solana-sdk.workspace = true
+trade-model.workspace = true
+types.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+test-strategy.workspace = true
+utils.workspace = true
+
+[lints]
+workspace = true
