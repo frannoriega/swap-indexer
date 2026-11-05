@@ -68,10 +68,10 @@ impl<T: Clone> CallTree<T> {
 
 #[cfg(test)]
 mod tests {
-    use trade_model::Operation;
     use proptest::{prelude::*, prop_assert_eq};
     use solana_sdk::pubkey::Pubkey;
     use test_strategy::proptest;
+    use trade_model::Operation;
     use utils::proptest::addresses;
 
     use super::*;

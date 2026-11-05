@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use parser_core::LEOperationParser;
-use trade_model::{Operation, swap::SwapInOperation};
 use solana_sdk::pubkey::Pubkey;
+use trade_model::{Operation, swap::SwapInOperation};
 use types::unpack::Unpacker;
 use types::unpack::little_endian::LittleEndianUnpacker;
 

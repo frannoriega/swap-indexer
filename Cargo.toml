@@ -3,9 +3,10 @@ resolver = "2"
 members = [
     "crates/cli",
     "crates/core/*",
+    "crates/domains/*/interpreters/*",
     "crates/domains/*/model",
     "crates/domains/*/parsers/*",
-    "crates/domains/*/interpreters/*",
+    "crates/domains/trade/variants/*",
 ]
 
 [workspace.dependencies]

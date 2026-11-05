@@ -112,10 +112,6 @@ mod tests {
     use std::ops::RangeInclusive;
 
     use super::*;
-    use trade_model::{
-        Operation, ParsedInstruction,
-        swap::{SwapInOperation, SwapOutOperation},
-    };
     use proptest::{
         arbitrary::any,
         prop_oneof,
@@ -124,6 +120,10 @@ mod tests {
     #[cfg(test)]
     use proptest::{prop_assert, prop_assert_eq};
     use test_strategy::proptest;
+    use trade_model::{
+        Operation, ParsedInstruction,
+        swap::{SwapInOperation, SwapOutOperation},
+    };
     use utils::proptest::{address, addresses};
 
     use crate::execution::ExecutionGraph;

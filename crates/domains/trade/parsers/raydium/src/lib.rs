@@ -2,8 +2,8 @@ pub mod instruction;
 use std::{collections::HashMap, sync::LazyLock};
 
 use anyhow::anyhow;
-use parser_core::instruction::InstructionParser;
 use parser_core::LEOperationParser;
+use parser_core::instruction::InstructionParser;
 use solana_sdk::pubkey::Pubkey;
 use trade_model::Operation;
 use types::{Instruction, unpack::little_endian::LittleEndianUnpacker};

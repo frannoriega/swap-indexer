@@ -1,6 +1,6 @@
 use parser_core::LEOperationParser;
-use trade_model::{Operation, swap::SwapOutOperation};
 use solana_sdk::pubkey::Pubkey;
+use trade_model::{Operation, swap::SwapOutOperation};
 use types::unpack::Unpacker;
 use types::unpack::little_endian::LittleEndianUnpacker;
 

@@ -2,9 +2,9 @@ use std::collections::{HashMap, HashSet};
 
 use indexer::{accounts::AccountInfo, call_tree::CallTree, interpreter::Event};
 use parser_core::instruction::Resource;
-use trade_model::Operation;
 use petgraph::graph::NodeIndex;
 use solana_sdk::pubkey::Pubkey;
+use trade_model::Operation;
 
 use crate::Trade;
 
@@ -257,8 +257,8 @@ pub fn summarize(
 #[cfg(test)]
 mod tests {
     use indexer::execution::ExecutionGraph;
-    use trade_model::{ParsedInstruction, swap::SwapInOperation, transfer::TransferOperation};
     use solana_sdk::pubkey::Pubkey;
+    use trade_model::{ParsedInstruction, swap::SwapInOperation, transfer::TransferOperation};
 
     use super::*;
 

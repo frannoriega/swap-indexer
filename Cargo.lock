@@ -2461,6 +2461,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
+name = "plain"
+version = "0.1.0"
+
+[[package]]
 name = "portable-atomic"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2855,6 +2859,10 @@ dependencies = [
  "thiserror 1.0.69",
  "tower-service",
 ]
+
+[[package]]
+name = "resolved"
+version = "0.1.0"
 
 [[package]]
 name = "rfc6979"

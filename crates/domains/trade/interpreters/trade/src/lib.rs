@@ -5,8 +5,8 @@ use indexer::{
     execution::{Execution, ExecutionGraph},
     interpreter::Interpreter,
 };
-use trade_model::{Operation, ParsedInstruction};
 use petgraph::{Direction, graph::NodeIndex};
+use trade_model::{Operation, ParsedInstruction};
 
 pub type TradeGraph = ExecutionGraph<ParsedInstruction>;
 
