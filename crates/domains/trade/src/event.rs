@@ -1,14 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
+use indexer::{accounts::AccountInfo, call_tree::CallTree, interpreter::Event};
 use parser_core::instruction::{Resource, operation::Operation};
 use petgraph::graph::NodeIndex;
 use solana_sdk::pubkey::Pubkey;
 
-use crate::{
-    accounts::AccountInfo,
-    call_tree::CallTree,
-    interpreter::{Event, trade::Trade},
-};
+use crate::Trade;
 
 /// A balance movement. Note that this doesn't represent the direction of the movement,
 /// just that an `account` moved `amount` of `token`s.
@@ -258,6 +255,7 @@ pub fn summarize(
 
 #[cfg(test)]
 mod tests {
+    use indexer::execution::ExecutionGraph;
     use parser_core::instruction::{
         ParsedInstruction,
         operation::{swap::SwapInOperation, transfer::TransferOperation},
@@ -265,7 +263,6 @@ mod tests {
     use solana_sdk::pubkey::Pubkey;
 
     use super::*;
-    use crate::{call_tree::CallTree, execution::ExecutionGraph};
 
     fn parsed(operation: Operation, outer_idx: u8, stack_depth: u32) -> ParsedInstruction {
         ParsedInstruction {

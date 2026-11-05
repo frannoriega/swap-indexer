@@ -1,5 +1,3 @@
-pub mod trade;
-
 use parser_core::instruction::Linkable;
 use solana_sdk::pubkey::Pubkey;
 

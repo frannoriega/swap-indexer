@@ -77,7 +77,7 @@ impl<T> IndexerBuilder<T> {
     pub fn with_boxed_parser(
         mut self,
         program_id: Pubkey,
-        parser: Box<dyn InstructionParser<T> + Send + Sync>
+        parser: Box<dyn InstructionParser<T> + Send + Sync>,
     ) -> Self {
         self.parsers.insert(program_id, parser);
         self

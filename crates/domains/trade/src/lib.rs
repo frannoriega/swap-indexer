@@ -1,13 +1,12 @@
 pub mod event;
 pub mod resolver;
 
-use parser_core::instruction::{ParsedInstruction, operation::Operation};
-use petgraph::{Direction, graph::NodeIndex};
-
-use crate::{
+use indexer::{
     execution::{Execution, ExecutionGraph},
     interpreter::Interpreter,
 };
+use parser_core::instruction::{ParsedInstruction, operation::Operation};
+use petgraph::{Direction, graph::NodeIndex};
 
 pub type TradeGraph = ExecutionGraph<ParsedInstruction>;
 

@@ -2,9 +2,10 @@
 resolver = "2"
 members = [
     "crates/cli",
+    "crates/domains/trade",
+    "crates/fetchers/*",
     "crates/indexer",
     "crates/parsers/*",
-    "crates/fetchers/*",
     "crates/types",
     "crates/utils",
 ]
@@ -25,6 +26,7 @@ solana-client = "4.3.0"
 solana-sdk = "4.1.0"
 solana-transaction-status = "4.3.0"
 test-strategy = "0.4.5"
+trade = { path = "crates/domains/trade" }
 types = { path = "crates/types" }
 utils = { path = "crates/utils" }
 

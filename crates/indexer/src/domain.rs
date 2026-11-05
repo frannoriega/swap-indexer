@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use anyhow::anyhow;
 use parser_core::instruction::{InstructionParser, Parsed, Resource};
@@ -180,7 +180,9 @@ mod tests {
     /// exercise overlap/no-overlap combinations, small enough to keep a
     /// shrunk proptest failure readable.
     fn pool(n: usize) -> Vec<Pubkey> {
-        (0..n).map(|i| Pubkey::new_from_array([i as u8; 32])).collect()
+        (0..n)
+            .map(|i| Pubkey::new_from_array([i as u8; 32]))
+            .collect()
     }
 
     fn instruction(program_id: Pubkey) -> Instruction {
@@ -266,7 +268,10 @@ mod tests {
                 .borrow_mut()
                 .drain(..)
                 .map(|program_id| {
-                    Box::new(TestEvent { domain: self.id, program_id }) as Box<dyn Event>
+                    Box::new(TestEvent {
+                        domain: self.id,
+                        program_id,
+                    }) as Box<dyn Event>
                 })
                 .collect())
         }
@@ -360,8 +365,10 @@ mod tests {
             .collect();
         let mut registry = DomainRegistry::new(domains).unwrap();
 
-        let instructions: Vec<Instruction> =
-            program_idxs.iter().map(|&i| instruction(addrs[i])).collect();
+        let instructions: Vec<Instruction> = program_idxs
+            .iter()
+            .map(|&i| instruction(addrs[i]))
+            .collect();
         let expected: Vec<Pubkey> = program_idxs.iter().map(|&i| addrs[i]).collect();
 
         let tx = raw_tx(instructions, None);
@@ -385,7 +392,10 @@ mod tests {
         let seen = domain.seen.clone();
         let mut registry = DomainRegistry::new(vec![boxed(domain)]).unwrap();
 
-        let tx = raw_tx(vec![instruction(addr)], Some(TransactionError::AccountInUse));
+        let tx = raw_tx(
+            vec![instruction(addr)],
+            Some(TransactionError::AccountInUse),
+        );
 
         assert!(registry.process(&tx).is_err());
         assert!(

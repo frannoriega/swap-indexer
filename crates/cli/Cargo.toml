@@ -9,11 +9,11 @@ clap = { workspace = true, features = ["derive"] }
 indexer.workspace = true
 parser-core.workspace = true
 parser-raydium.workspace = true
-petgraph = "0.8.3"
 rpc-fetcher.workspace = true
 solana-sdk.workspace = true
 tokio = { version = "1", features = ["full"] }
 types.workspace = true
+trade.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

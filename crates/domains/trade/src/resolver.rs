@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 
+use indexer::{accounts::TokenResolver, interpreter::Event};
 use solana_sdk::pubkey::Pubkey;
 
-use crate::accounts::TokenResolver;
-use crate::interpreter::Event;
-use crate::interpreter::trade::event::{Legs, TokenAmount, TradeEvent};
+use crate::event::{Legs, TokenAmount, TradeEvent};
 
 /// A [TokenAmount] once resolution has been attempted.
 /// `symbol` is `None` when the resolver has nothing for this mint (or the mint itself wasn't

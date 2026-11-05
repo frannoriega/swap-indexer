@@ -5,11 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
-bs58.workspace = true
-clap.workspace = true
-solana-client.workspace = true
 solana-sdk.workspace = true
-solana-transaction-status.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

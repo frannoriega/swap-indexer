@@ -5,15 +5,15 @@ use anyhow::anyhow;
 use clap::{Arg, Command, ValueEnum, value_parser};
 use indexer::IndexerBuilder;
 use indexer::accounts::{StaticTokenResolver, TokenInfo, token_accounts};
-use indexer::interpreter::trade::TradeInterpreter;
-use indexer::interpreter::trade::event::summarize;
-use indexer::interpreter::trade::resolver::resolve;
 use indexer::interpreter::{Event, Interpreter};
 use parser_core::system::SplTokenParser;
 use parser_raydium::RaydiumParser;
 use rpc_fetcher::RpcFetcher;
 use solana_sdk::pubkey;
 use solana_sdk::{pubkey::Pubkey, signature::Signature};
+use trade::TradeInterpreter;
+use trade::event::summarize;
+use trade::resolver::resolve;
 use types::Fetcher;
 
 #[derive(Copy, Clone, ValueEnum)]

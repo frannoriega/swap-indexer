@@ -5,13 +5,9 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
-clap = { workspace = true, features = ["derive"] }
 parser-core.workspace = true
-parser-raydium.workspace = true
 petgraph = "0.8.3"
-rpc-fetcher.workspace = true
 solana-sdk.workspace = true
-tokio = { version = "1", features = ["full"] }
 types.workspace = true
 
 [dev-dependencies]
