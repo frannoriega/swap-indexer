@@ -28,6 +28,7 @@ pub struct TokenBalance {
 /**
  * An already parsed Solana transaction
  */
+#[derive(Default)]
 pub struct RawTx {
     pub signature: Signature,
     pub slot: Slot,
