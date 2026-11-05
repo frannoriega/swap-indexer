@@ -3,9 +3,8 @@ resolver = "2"
 members = [
     "crates/cli",
     "crates/indexer",
-    "crates/parser-core",
-    "crates/parser-raydium",
-    "crates/rpc-fetcher",
+    "crates/parsers/*",
+    "crates/fetchers/*",
     "crates/types",
     "crates/utils",
 ]
@@ -15,10 +14,10 @@ anyhow = "1.0.104"
 bs58 = "0.5.1"
 clap = "4.6.7"
 indexer = { path = "crates/indexer" }
-parser-core = { path = "crates/parser-core" }
-parser-raydium = { path = "crates/parser-raydium" }
+parser-core = { path = "crates/parsers/parser-core" }
+parser-raydium = { path = "crates/parsers/parser-raydium" }
 proptest = "1.12.0"
-rpc-fetcher = { path = "crates/rpc-fetcher" }
+rpc-fetcher = { path = "crates/fetchers/rpc-fetcher" }
 solana-client = "4.3.0"
 # Using older sdk version to align solana-client and solana-transaction-status
 # to use the same solana-transaction-error dependency
