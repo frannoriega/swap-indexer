@@ -2461,8 +2461,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
-name = "plain"
+name = "plain-trade-domain"
 version = "0.1.0"
+dependencies = [
+ "indexer",
+ "parser-core",
+ "solana-sdk",
+ "trade-interpreter",
+ "trade-model",
+ "trade-parser-raydium",
+ "trade-parser-spl-token",
+ "types",
+]
 
 [[package]]
 name = "portable-atomic"
@@ -2861,8 +2871,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "resolved"
+name = "resolved-trade-domain"
 version = "0.1.0"
+dependencies = [
+ "indexer",
+ "parser-core",
+ "plain-trade-domain",
+ "solana-sdk",
+ "trade-interpreter",
+ "trade-model",
+ "types",
+]
 
 [[package]]
 name = "rfc6979"

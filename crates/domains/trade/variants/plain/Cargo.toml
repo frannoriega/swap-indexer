@@ -1,9 +1,17 @@
 [package]
-name = "plain"
+name = "plain-trade-domain"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+solana-sdk.workspace = true
+trade-model.workspace = true
+trade-parser-raydium.workspace = true
+trade-parser-spl-token.workspace = true
+trade-interpreter.workspace = true
+parser-core.workspace = true
+indexer.workspace = true
+types.workspace = true
 
 [lints]
 workspace = true

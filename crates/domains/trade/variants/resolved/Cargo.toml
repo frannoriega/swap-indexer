@@ -1,9 +1,16 @@
 [package]
-name = "resolved"
+name = "resolved-trade-domain"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+solana-sdk.workspace = true
+trade-model.workspace = true
+trade-interpreter.workspace = true
+plain-trade-domain.workspace = true
+parser-core.workspace = true
+indexer.workspace = true
+types.workspace = true
 
 [lints]
 workspace = true
