@@ -72,7 +72,7 @@ pub struct DomainRunner<D: Domain> {
 }
 
 impl<D: Domain> DomainRunner<D> {
-    fn new(domain: D) -> Self {
+    pub fn new(domain: D) -> Self {
         let mut indexer_builder = IndexerBuilder::new();
         for (program_id, parser) in domain.parsers().into_iter() {
             indexer_builder = indexer_builder.with_boxed_parser(program_id, parser);

@@ -167,10 +167,7 @@ mod tests {
 
         let events = domain.events(&tx, &processed);
         assert_eq!(events.len(), 1);
-        assert_eq!(
-            events[0].input[&wallet_src].symbol,
-            Some("USDC".to_owned())
-        );
+        assert_eq!(events[0].input[&wallet_src].symbol, Some("USDC".to_owned()));
         assert_eq!(events[0].output[&pool].symbol, None);
     }
 }

@@ -1,12 +1,13 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/cli",
     "crates/core/*",
     "crates/domains/*/interpreters/*",
     "crates/domains/*/model",
     "crates/domains/*/parsers/*",
     "crates/domains/trade/variants/*",
+    "crates/fetchers/*",
+    "crates/inspect",
 ]
 
 [workspace.dependencies]
@@ -17,7 +18,8 @@ indexer = { path = "crates/core/indexer" }
 parser-core = { path = "crates/core/parser-core" }
 plain-trade-domain = { path = "crates/domains/trade/variants/plain" }
 proptest = "1.12.0"
-rpc-fetcher = { path = "crates/core/rpc-fetcher" }
+resolved-trade-domain = { path = "crates/domains/trade/variants/resolved" }
+rpc-fetcher = { path = "crates/fetchers/rpc-fetcher" }
 solana-client = "4.3.0"
 # Using older sdk version to align solana-client and solana-transaction-status
 # to use the same solana-transaction-error dependency

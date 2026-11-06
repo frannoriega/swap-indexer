@@ -3,17 +3,12 @@ use std::sync::LazyLock;
 
 use anyhow::anyhow;
 use clap::{Arg, Command, ValueEnum, value_parser};
-use indexer::IndexerBuilder;
-use indexer::accounts::{StaticTokenResolver, TokenInfo, token_accounts};
-use indexer::interpreter::{Event, Interpreter};
+use indexer::accounts::{StaticTokenResolver, TokenInfo};
+use indexer::domain::{DomainRegistry, DomainRunner};
+use resolved_trade_domain::ResolvedTradeDomain;
 use rpc_fetcher::RpcFetcher;
 use solana_sdk::pubkey;
 use solana_sdk::{pubkey::Pubkey, signature::Signature};
-use trade_interpreter::TradeInterpreter;
-use trade_interpreter::event::summarize;
-use trade_interpreter::resolver::resolve;
-use trade_parser_raydium::RaydiumParser;
-use trade_parser_spl_token::SplTokenParser;
 use types::Fetcher;
 
 #[derive(Copy, Clone, ValueEnum)]
@@ -26,7 +21,6 @@ const SOL_TOKEN: Pubkey = pubkey!("So11111111111111111111111111111111111111112")
 const WSOL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 const SPL_TOKEN_2022: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
 const USDC_TOKEN: Pubkey = pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-const RAYDIUM_AMM_V4: Pubkey = pubkey!("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
 
 static KNOWN_TOKENS: LazyLock<HashMap<Pubkey, TokenInfo>> = LazyLock::new(|| {
     let mut map = HashMap::new();
@@ -101,23 +95,11 @@ async fn main() -> Result<(), anyhow::Error> {
         FetcherOpt::Rpc => RpcFetcher::new(url.to_owned()),
     };
     let tx = fetcher.get_transaction(signature).await?;
-    let indexer = IndexerBuilder::new()
-        .with_parser(RAYDIUM_AMM_V4, RaydiumParser)
-        .with_parser(WSOL_TOKEN, SplTokenParser)
-        .with_parser(SPL_TOKEN_2022, SplTokenParser)
-        .build();
-    let processed = indexer.process(&tx)?;
     let resolver = StaticTokenResolver::new(KNOWN_TOKENS.clone());
-    let accounts = token_accounts(&tx);
-    for (idx, trade) in TradeInterpreter::interpret(&processed.flow_graph)
-        .iter()
-        .enumerate()
-        // TODO: Log dropped trades
-        .filter_map(|(idx, trade)| {
-            summarize(trade, &processed.call_tree, &accounts).map(|e| (idx, resolve(&e, &resolver)))
-        })
-    {
-        println!("Trade {}: {}", idx + 1, trade.describe());
+    let domain = ResolvedTradeDomain::new(resolver);
+    let mut registry = DomainRegistry::new(vec![Box::new(DomainRunner::new(domain))])?;
+    for (idx, event) in registry.process(&tx)?.into_iter().enumerate() {
+        println!("Event {}: {}", idx, event.describe())
     }
     Ok(())
 }

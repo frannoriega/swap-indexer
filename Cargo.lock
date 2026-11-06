@@ -800,27 +800,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c133bc6a41be0d194c306b5506d15e6feeea7b1d6604bd3f8310dfb2ca96486"
 
 [[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "indexer",
- "parser-core",
- "proptest",
- "rand 0.10.3",
- "rpc-fetcher",
- "solana-sdk",
- "test-strategy",
- "tokio",
- "trade-interpreter",
- "trade-parser-raydium",
- "trade-parser-spl-token",
- "types",
- "utils",
-]
-
-[[package]]
 name = "cmov"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1970,6 +1949,24 @@ dependencies = [
  "unicode-width",
  "unit-prefix",
  "web-time",
+]
+
+[[package]]
+name = "inspect"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "indexer",
+ "proptest",
+ "rand 0.10.3",
+ "resolved-trade-domain",
+ "rpc-fetcher",
+ "solana-sdk",
+ "test-strategy",
+ "tokio",
+ "types",
+ "utils",
 ]
 
 [[package]]
