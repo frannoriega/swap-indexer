@@ -18,7 +18,7 @@ enum FetcherOpt {
 }
 
 const SOL_TOKEN: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
-const WSOL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const SPL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 const SPL_TOKEN_2022: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
 const USDC_TOKEN: Pubkey = pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
@@ -32,7 +32,7 @@ static KNOWN_TOKENS: LazyLock<HashMap<Pubkey, TokenInfo>> = LazyLock::new(|| {
         },
     );
     map.insert(
-        WSOL_TOKEN,
+        SPL_TOKEN,
         TokenInfo {
             symbol: "SOL".to_owned(),
             name: Some("Wrapped SOL".to_owned()),

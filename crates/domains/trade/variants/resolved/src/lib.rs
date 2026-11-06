@@ -65,7 +65,7 @@ mod tests {
 
     use super::*;
 
-    const WSOL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+    const SPL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
     const SPL_TOKEN_2022: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
     const RAYDIUM_AMM_V4: Pubkey = pubkey!("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
 
@@ -94,7 +94,7 @@ mod tests {
         let ids: HashSet<_> = domain.parsers().keys().copied().collect();
         assert_eq!(
             ids,
-            HashSet::from([RAYDIUM_AMM_V4, WSOL_TOKEN, SPL_TOKEN_2022])
+            HashSet::from([RAYDIUM_AMM_V4, SPL_TOKEN, SPL_TOKEN_2022])
         );
     }
 

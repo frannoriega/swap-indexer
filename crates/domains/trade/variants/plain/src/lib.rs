@@ -13,7 +13,7 @@ use trade_parser_raydium::RaydiumParser;
 use trade_parser_spl_token::SplTokenParser;
 use types::RawTx;
 
-const WSOL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const SPL_TOKEN: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 const SPL_TOKEN_2022: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
 const RAYDIUM_AMM_V4: Pubkey = pubkey!("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
 
@@ -27,7 +27,7 @@ impl Domain for PlainTradeDomain {
         let mut parsers: HashMap<Pubkey, Box<dyn InstructionParser<Operation> + Send + Sync>> =
             HashMap::new();
         parsers.insert(RAYDIUM_AMM_V4, Box::new(RaydiumParser));
-        parsers.insert(WSOL_TOKEN, Box::new(SplTokenParser));
+        parsers.insert(SPL_TOKEN, Box::new(SplTokenParser));
         parsers.insert(SPL_TOKEN_2022, Box::new(SplTokenParser));
         parsers
     }
@@ -78,7 +78,7 @@ mod tests {
         let ids: HashSet<_> = PlainTradeDomain.parsers().keys().copied().collect();
         assert_eq!(
             ids,
-            HashSet::from([RAYDIUM_AMM_V4, WSOL_TOKEN, SPL_TOKEN_2022])
+            HashSet::from([RAYDIUM_AMM_V4, SPL_TOKEN, SPL_TOKEN_2022])
         );
     }
 
